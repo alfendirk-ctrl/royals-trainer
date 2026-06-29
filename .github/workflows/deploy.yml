@@ -21,6 +21,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download royal photos
+        run: |
+          mkdir -p images
+          declare -A imgs=(
+            ["willem-alexander"]="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/King_Willem-Alexander_June_2015_%281%29.JPG/400px-King_Willem-Alexander_June_2015_%281%29.JPG"
+            ["elizabeth-ii"]="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Queen_Elizabeth_II_in_March_2015.jpg/400px-Queen_Elizabeth_II_in_March_2015.jpg"
+            ["diana"]="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Princess_Diana_1997_%281%29.jpg/400px-Princess_Diana_1997_%281%29.jpg"
+            ["charles-iii"]="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/King_Charles_III_%28cropped%29.jpg/400px-King_Charles_III_%28cropped%29.jpg"
+            ["maxima"]="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Queen_Maxima_of_the_Netherlands_%28cropped%29.jpg/400px-Queen_Maxima_of_the_Netherlands_%28cropped%29.jpg"
+            ["felipe-vi"]="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/King_Felipe_VI_of_Spain.jpg/400px-King_Felipe_VI_of_Spain.jpg"
+            ["grace-kelly"]="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Grace_Kelly_portrait.jpg/400px-Grace_Kelly_portrait.jpg"
+            ["beatrix"]="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Beatrix_van_Nederland_2011.jpg/400px-Beatrix_van_Nederland_2011.jpg"
+            ["margrethe-ii"]="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Margrethe_II_of_Denmark_2023.jpg/400px-Margrethe_II_of_Denmark_2023.jpg"
+            ["catherine"]="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Catherine%2C_Princess_of_Wales_2023.jpg/400px-Catherine%2C_Princess_of_Wales_2023.jpg"
+            ["letizia"]="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Queen_Letizia_of_Spain_%28cropped%29.jpg/400px-Queen_Letizia_of_Spain_%28cropped%29.jpg"
+            ["william"]="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Prince_William_2021_%28cropped%29.jpg/400px-Prince_William_2021_%28cropped%29.jpg"
+            ["harald-v"]="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Harald_V_of_Norway_2021.jpg/400px-Harald_V_of_Norway_2021.jpg"
+            ["frederik-x"]="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Frederik_X_of_Denmark_%28cropped%29.jpg/400px-Frederik_X_of_Denmark_%28cropped%29.jpg"
+            ["albert-ii"]="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Albert_II_of_Monaco.jpg/400px-Albert_II_of_Monaco.jpg"
+            ["carl-xvi-gustaf"]="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Carl_XVI_Gustaf_2022.jpg/400px-Carl_XVI_Gustaf_2022.jpg"
+            ["victoria"]="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Victoria%2C_Crown_Princess_of_Sweden_%282018%29.jpg/400px-Victoria%2C_Crown_Princess_of_Sweden_%282018%29.jpg"
+            ["filip"]="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/King_Philippe_of_Belgium_%28cropped%29.jpg/400px-King_Philippe_of_Belgium_%28cropped%29.jpg"
+            ["mary"]="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Queen_Mary_of_Denmark_%28cropped%29.jpg/400px-Queen_Mary_of_Denmark_%28cropped%29.jpg"
+            ["haakon"]="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Haakon_Magnus_of_Norway_2022.jpg/400px-Haakon_Magnus_of_Norway_2022.jpg"
+          )
+          for name in "${!imgs[@]}"; do
+            curl -sL --max-time 20 -A "Wikimedia Commons image download" \
+              -o "images/${name}.jpg" "${imgs[$name]}"
+            echo "$name: $(stat -c%s images/${name}.jpg) bytes"
+          done
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
