@@ -553,7 +553,17 @@ function loadPhoto(q){
   var img = document.getElementById('photo-img');
   var err = document.getElementById('photo-err');
   img.style.display = 'block'; err.style.display = 'none';
-  img.src = q.img;
+  fetch(q.img, {referrerPolicy: 'no-referrer'})
+    .then(function(r){ return r.blob(); })
+    .then(function(blob){
+      var url = URL.createObjectURL(blob);
+      img.onload = function(){ URL.revokeObjectURL(url); };
+      img.src = url;
+    })
+    .catch(function(){
+      img.style.display = 'none';
+      err.style.display = 'flex';
+    });
   document.getElementById('photo-err-hint').textContent = 'Hint: ' + q.hint;
   setDiffBadge('photo-diff', q.level);
   document.getElementById('photo-hint-strip').className = 'hint-strip';
