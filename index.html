@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Floor — Europese Royals Trainer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080810;--panel:#0E0E1A;--panel2:#141422;
+  --border:rgba(255,255,255,0.08);
+  --purple:#7B4FFF;--purple-glow:rgba(123,79,255,0.35);--purple-light:#A880FF;
+  --amber:#FF9A00;--amber-glow:rgba(255,154,0,0.35);
+  --green:#00D46A;--green-glow:rgba(0,212,106,0.3);
+  --red:#FF3B5C;--red-glow:rgba(255,59,92,0.3);
+  --text:#F0EFF8;--muted:#8888AA;--dim:#44445A;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:16px;overflow:hidden}
+body{display:flex;flex-direction:column;align-items:center;min-height:100dvh}
+
+/* FLOOR GRID */
+#floor-bg{position:fixed;bottom:-20%;left:50%;width:150%;height:55%;
+  transform:translateX(-50%) perspective(500px) rotateX(42deg);
+  transform-origin:bottom center;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(to top,rgba(123,79,255,0.16) 0%,transparent 100%),
+    repeating-linear-gradient(90deg,rgba(123,79,255,0.07) 0px,transparent 1px,transparent 52px,rgba(123,79,255,0.07) 53px),
+    repeating-linear-gradient(0deg,rgba(123,79,255,0.07) 0px,transparent 1px,transparent 52px,rgba(123,79,255,0.07) 53px)}
+#floor-fade{position:fixed;bottom:0;left:0;right:0;height:200px;
+  background:linear-gradient(to top,var(--bg) 50%,transparent);pointer-events:none;z-index:0}
+
+.app{width:100%;max-width:480px;height:100dvh;display:flex;flex-direction:column;position:relative;z-index:1;overflow:hidden}
+
+/* HEADER */
+.header{flex-shrink:0;padding:max(env(safe-area-inset-top),16px) 20px 0;text-align:center}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:10px;padding-bottom:6px}
+.logo-tiles{display:grid;grid-template-columns:repeat(3,10px);gap:2px}
+.lt{width:10px;height:10px;border-radius:2px}
+.logo-text{font-family:Impact,'Arial Black',sans-serif;font-size:26px;letter-spacing:.05em;text-transform:uppercase;color:#fff}
+.logo-text span{color:var(--purple-light)}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(123,79,255,.15);
+  border:1px solid rgba(123,79,255,.4);border-radius:20px;padding:4px 14px;
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--purple-light)}
+
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 16px 40px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* SCREENS */
+.screen{display:none}.screen.active{display:block}
+
+/* HOME */
+.section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+.round-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;
+  transition:transform .12s;user-select:none}
+.round-card:active{transform:scale(.98)}
+.round-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;flex-shrink:0}
+.round-title{font-family:Impact,'Arial Black',sans-serif;font-size:18px;letter-spacing:.03em;
+  text-transform:uppercase;color:#fff;margin-bottom:3px}
+.round-desc{font-size:12px;color:var(--muted)}
+.round-arrow{margin-left:auto;color:var(--dim);font-size:18px;flex-shrink:0}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:12px 8px;text-align:center}
+.stat-num{font-family:Impact,'Arial Black',sans-serif;font-size:24px;line-height:1}
+.stat-lbl{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px}
+.round-badge{border-radius:20px;padding:4px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.stop-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 12px;
+  color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:12px}
+.prog-info{display:flex;justify-content:space-between;margin-bottom:5px;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.prog-track{height:3px;background:var(--panel2);border-radius:2px}
+.prog-fill{height:100%;border-radius:2px;transition:width .4s}
+
+/* TIMER */
+.timer-wrap{margin-bottom:14px}
+.timer-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.timer-num{font-family:Impact,'Arial Black',sans-serif;font-size:38px;line-height:1;transition:color .3s}
+.timer-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.timer-track{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden}
+.timer-fill{height:100%;border-radius:2px;transition:width .8s linear,background .4s}
+
+/* DIFF BADGE */
+.diff-badge{font-size:10px;padding:3px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+
+/* PHOTO CARD */
+.photo-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px}
+.photo-img{width:100%;height:280px;object-fit:cover;object-position:top center;display:block;
+  background:var(--panel2)}
+.photo-img-error{width:100%;height:280px;background:var(--panel2);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:14px}
+.photo-footer{padding:10px 16px 14px;display:flex;align-items:center;justify-content:space-between}
+.photo-label{font-family:Impact,'Arial Black',sans-serif;font-size:16px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--purple-light)}
+
+/* QUESTION CARD */
+.q-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
+  padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
+.q-card::before{content:'';position:absolute;top:-40px;right:-40px;width:100px;height:100px;
+  background:radial-gradient(circle,rgba(123,79,255,.2) 0%,transparent 70%);pointer-events:none}
+.q-meta{display:flex;justify-content:space-between;margin-bottom:12px}
+.q-num{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.q-text{font-family:Impact,'Arial Black',sans-serif;font-size:20px;text-transform:uppercase;
+  letter-spacing:.02em;color:#fff;line-height:1.35}
+
+/* CHIPS */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.chip{padding:7px 14px;border-radius:20px;font-size:14px;font-weight:500;
+  transition:all .5s;user-select:none}
+.chip.shown{background:rgba(0,212,106,.1);border:1px solid rgba(0,212,106,.35);color:var(--text)}
+.chip.hidden{background:var(--panel2);border:1px solid rgba(255,255,255,.05);color:var(--panel2)}
+.reveal-btn{margin-top:12px;font-size:12px;padding:5px 12px;border-radius:20px;
+  border:1px solid rgba(0,212,106,.3);background:rgba(0,212,106,.08);color:#60D46A;cursor:pointer;font-family:inherit}
+
+/* HINT */
+.hint-strip{background:rgba(255,154,0,.08);border-left:3px solid var(--amber);
+  border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;
+  font-size:13px;color:rgba(255,200,100,.85);line-height:1.5;display:none}
+.hint-strip.show{display:block}
+
+/* INPUT */
+.ans-input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--border);
+  background:var(--panel);color:#fff;font-size:16px;font-family:inherit;
+  outline:none;margin-bottom:10px;-webkit-appearance:none;transition:border-color .15s}
+.ans-input:focus{border-color:rgba(123,79,255,.5);box-shadow:0 0 0 3px rgba(123,79,255,.12)}
+.ans-input::placeholder{color:var(--dim)}
+
+/* ACTION BUTTONS */
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.btn-primary{grid-column:1/-1;padding:16px;border-radius:12px;border:none;color:#fff;
+  font-family:Impact,'Arial Black',sans-serif;font-size:16px;letter-spacing:.06em;
+  text-transform:uppercase;cursor:pointer;transition:transform .1s}
+.btn-primary:active{transform:scale(.97)}
+.btn-secondary{padding:13px;border-radius:10px;border:1px solid var(--border);
+  background:var(--panel);color:var(--muted);font-family:Impact,'Arial Black',sans-serif;
+  font-size:13px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:background .12s}
+.btn-secondary:active{background:var(--panel2)}
+.btn-secondary:disabled{color:var(--dim);cursor:default}
+
+/* MC OPTIONS */
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.mc-opt{padding:15px 12px;border-radius:12px;cursor:pointer;
+  text-align:left;font-size:14px;font-family:inherit;line-height:1.3;
+  display:flex;gap:10px;align-items:flex-start;transition:all .15s}
+.mc-letter{font-family:Impact,'Arial Black',sans-serif;font-size:16px;flex-shrink:0}
+
+/* REVEAL */
+.reveal-card{border-radius:16px;padding:18px;margin-bottom:14px}
+.reveal-icon{font-size:26px;margin-bottom:8px;display:block}
+.reveal-title{font-family:Impact,'Arial Black',sans-serif;font-size:19px;text-transform:uppercase;
+  letter-spacing:.04em;margin-bottom:8px}
+.reveal-body{font-size:13px;color:var(--muted);line-height:1.7}
+.btn-next{width:100%;padding:16px;border-radius:12px;border:none;background:var(--purple);color:#fff;
+  font-family:Impact,'Arial Black',sans-serif;font-size:16px;letter-spacing:.06em;
+  text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px var(--purple-glow);margin-bottom:10px}
+.btn-menu{width:100%;padding:13px;border-radius:10px;border:1px solid var(--border);
+  background:var(--panel);color:var(--muted);font-family:Impact,'Arial Black',sans-serif;
+  font-size:14px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+
+/* RESULTS */
+.results-hero{text-align:center;padding:24px 0 16px}
+.res-tiles{display:grid;grid-template-columns:repeat(5,16px);grid-template-rows:repeat(5,16px);
+  gap:3px;margin:0 auto 16px;width:fit-content}
+.res-tile{border-radius:3px}
+.res-grade{font-family:Impact,'Arial Black',sans-serif;font-size:28px;text-transform:uppercase;letter-spacing:.04em}
+.res-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.res-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center}
+.res-num{font-family:Impact,'Arial Black',sans-serif;font-size:28px;line-height:1;margin-bottom:4px}
+.res-lbl{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.missed-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.missed-row{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:10px 14px;margin-bottom:8px}
+.missed-q{font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.4}
+.missed-a{font-family:Impact,'Arial Black',sans-serif;font-size:16px;color:var(--purple-light);letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div id="floor-bg"></div>
+<div id="floor-fade"></div>
+
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-tiles" id="logo-tiles"></div>
+      <div class="logo-text">The <span>Floor</span></div>
+    </div>
+    <div class="pill">&#9819; Europese Royals Trainer</div>
+  </div>
+
+  <div class="scroll">
+    <!-- HOME -->
+    <div id="screen-home" class="screen active">
+      <div class="section-label">Kies een ronde</div>
+      <div class="round-card" onclick="startRound('photo')">
+        <div class="round-icon" style="background:rgba(123,79,255,.15);border:1px solid rgba(123,79,255,.3)">&#128247;</div>
+        <div>
+          <div class="round-title">Fotoronde</div>
+          <div class="round-desc">Echte foto's &mdash; wie zie je? &middot; 20 vragen, oplopend</div>
+        </div>
+        <div class="round-arrow">›</div>
+      </div>
+      <div class="round-card" onclick="startRound('mc')">
+        <div class="round-icon" style="background:rgba(255,154,0,.15);border:1px solid rgba(255,154,0,.3)">&#127919;</div>
+        <div>
+          <div class="round-title">Multiple Choice</div>
+          <div class="round-desc">4 opties &mdash; kies het juiste antwoord &middot; 20 vragen</div>
+        </div>
+        <div class="round-arrow">›</div>
+      </div>
+      <div class="round-card" onclick="startRound('assoc')">
+        <div class="round-icon" style="background:rgba(0,212,106,.12);border:1px solid rgba(0,212,106,.3)">&#128279;</div>
+        <div>
+          <div class="round-title">Associaties</div>
+          <div class="round-desc">Woorden onthullen zich &eacute;&eacute;n voor &eacute;&eacute;n &middot; 20 vragen</div>
+        </div>
+        <div class="round-arrow">›</div>
+      </div>
+      <div id="home-stats" style="display:none">
+        <div class="section-label">Statistieken</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-num" id="st-rounds" style="color:#fff">0</div><div class="stat-lbl">Rondes</div></div>
+          <div class="stat-box"><div class="stat-num" id="st-correct" style="color:#00D46A">0</div><div class="stat-lbl">Goed</div></div>
+          <div class="stat-box"><div class="stat-num" id="st-pct" style="color:#A880FF">0%</div><div class="stat-lbl">Score</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="screen-question" class="screen">
+      <div class="top-bar">
+        <span id="q-badge" class="round-badge">Ronde</span>
+        <button class="stop-btn" onclick="goMenu()">&#10005; Stop</button>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-info">
+          <span id="prog-label">Vraag 1 / 20</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+      <div class="timer-wrap" id="timer-wrap">
+        <div class="timer-top">
+          <span class="timer-num" id="timer-num">45</span>
+          <span class="timer-lbl">seconden</span>
+        </div>
+        <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%;background:var(--purple)"></div></div>
+      </div>
+
+      <!-- PHOTO -->
+      <div id="photo-block" style="display:none">
+        <div class="photo-card">
+          <img id="photo-img" class="photo-img" src="" alt="Wie is dit?" onerror="this.style.display='none';document.getElementById('photo-err').style.display='flex'">
+          <div id="photo-err" class="photo-img-error" style="display:none">
+            <span style="font-size:36px">&#128081;</span>
+            <span>Foto tijdelijk niet beschikbaar</span>
+            <span id="photo-err-hint" style="font-size:12px;text-align:center;padding:0 20px;color:var(--dim)"></span>
+          </div>
+          <div class="photo-footer">
+            <span class="photo-label">Wie is dit?</span>
+            <span id="photo-diff" class="diff-badge"></span>
+          </div>
+        </div>
+        <div class="hint-strip" id="photo-hint-strip"></div>
+        <input class="ans-input" id="photo-input" type="text" placeholder="Typ naam of land..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="action-grid" id="photo-actions">
+          <button class="btn-primary" id="photo-check" style="background:var(--purple);box-shadow:0 4px 20px var(--purple-glow)" onclick="checkPhoto()">Controleer</button>
+          <button class="btn-secondary" id="photo-hint-btn" onclick="showPhotoHint()">&#128161; Hint</button>
+          <button class="btn-secondary" onclick="skipCurrent()">Sla over</button>
+        </div>
+      </div>
+
+      <!-- MC -->
+      <div id="mc-block" style="display:none">
+        <div class="q-card">
+          <div class="q-meta">
+            <span id="mc-num" class="q-num">Vraag 1/20</span>
+            <span id="mc-diff" class="diff-badge"></span>
+          </div>
+          <div class="q-text" id="mc-text"></div>
+        </div>
+        <div class="mc-grid" id="mc-options"></div>
+      </div>
+
+      <!-- ASSOC -->
+      <div id="assoc-block" style="display:none">
+        <div class="q-card">
+          <div class="q-meta">
+            <div class="q-text" style="font-size:17px">Welke royal past hierbij?</div>
+            <span id="assoc-diff" class="diff-badge"></span>
+          </div>
+          <div class="chips-wrap" id="assoc-chips"></div>
+          <div id="assoc-reveal-wrap" style="margin-top:12px"></div>
+        </div>
+        <div class="hint-strip" id="assoc-hint-strip" style="margin-top:0;margin-bottom:10px"></div>
+        <input class="ans-input" id="assoc-input" type="text" placeholder="Naam van de royal..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="action-grid" id="assoc-actions">
+          <button class="btn-primary" id="assoc-check" style="background:var(--green);box-shadow:0 4px 20px var(--green-glow)" onclick="checkAssoc()">Controleer</button>
+          <button class="btn-secondary" id="assoc-reveal-btn" onclick="revealOneChip()">&#128161; Hint +1</button>
+          <button class="btn-secondary" onclick="skipCurrent()">Sla over</button>
+        </div>
+      </div>
+
+      <!-- REVEAL -->
+      <div id="reveal-block" style="display:none">
+        <div class="reveal-card" id="reveal-card">
+          <span class="reveal-icon" id="reveal-icon"></span>
+          <div class="reveal-title" id="reveal-title"></div>
+          <div class="reveal-body" id="reveal-body"></div>
+        </div>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Volgende &#8594;</button>
+        <button class="btn-menu" onclick="goMenu()">Terug naar menu</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="screen-results" class="screen">
+      <div class="results-hero">
+        <div class="res-tiles" id="res-tiles"></div>
+        <div class="res-grade" id="res-grade"></div>
+        <div class="res-sub" id="res-sub"></div>
+      </div>
+      <div class="res-grid">
+        <div class="res-box"><div class="res-num" id="res-total" style="color:#fff"></div><div class="res-lbl">Vragen</div></div>
+        <div class="res-box"><div class="res-num" id="res-correct" style="color:#00D46A"></div><div class="res-lbl">Goed</div></div>
+        <div class="res-box"><div class="res-num" id="res-pct" style="color:#A880FF"></div><div class="res-lbl">Score</div></div>
+      </div>
+      <div id="missed-wrap"></div>
+      <button class="btn-next" id="btn-retry" onclick="retryRound()">Opnieuw &#8594;</button>
+      <button class="btn-menu" onclick="goHome()">Alle rondes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+var PHOTO_QS = [
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/King_Willem-Alexander_June_2015_%281%29.JPG/400px-King_Willem-Alexander_June_2015_%281%29.JPG",answer:"Willem-Alexander",alt:["nederland","willem alexander"],hint:"Koning der Nederlanden, besteeg troon op 30 april 2013",level:1},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Queen_Elizabeth_II_in_March_2015.jpg/400px-Queen_Elizabeth_II_in_March_2015.jpg",answer:"Elizabeth II",alt:["elizabeth","koningin elizabeth"],hint:"Regeerde 70 jaar als Britse koningin (1952-2022)",level:1},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Princess_Diana_1997_%281%29.jpg/400px-Princess_Diana_1997_%281%29.jpg",answer:"Diana",alt:["prinses diana","lady di","diana spencer"],hint:"Prinses van Wales, overleed 31 augustus 1997 in Parijs",level:1},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/King_Charles_III_%28cropped%29.jpg/400px-King_Charles_III_%28cropped%29.jpg",answer:"Charles III",alt:["charles","koning charles"],hint:"Huidig Brits monarch, kroonde in Westminster Abbey in 2023",level:1},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Queen_Maxima_of_the_Netherlands_%28cropped%29.jpg/400px-Queen_Maxima_of_the_Netherlands_%28cropped%29.jpg",answer:"Maxima",alt:["maxima","koningin maxima"],hint:"Koningin der Nederlanden, geboren in Buenos Aires, Argentinie",level:2},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/King_Felipe_VI_of_Spain.jpg/400px-King_Felipe_VI_of_Spain.jpg",answer:"Felipe VI",alt:["felipe","spaanse koning"],hint:"Huidige Spaanse monarch, volgde Juan Carlos I op in 2014",level:2},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Grace_Kelly_portrait.jpg/400px-Grace_Kelly_portrait.jpg",answer:"Grace Kelly",alt:["grace kelly","grace","princess grace"],hint:"Oscar-winnend actrice die in 1956 prinses van Monaco werd",level:2},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Beatrix_van_Nederland_2011.jpg/400px-Beatrix_van_Nederland_2011.jpg",answer:"Beatrix",alt:["koningin beatrix"],hint:"Koningin der Nederlanden van 1980 tot 2013, abdiceerde op haar 75e verjaardag",level:3},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Margrethe_II_of_Denmark_2023.jpg/400px-Margrethe_II_of_Denmark_2023.jpg",answer:"Margrethe II",alt:["margrethe","margrethe ii"],hint:"Deense koningin die op 14 januari 2024 abdiceerde na 52 jaar",level:3},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Catherine%2C_Princess_of_Wales_2023.jpg/400px-Catherine%2C_Princess_of_Wales_2023.jpg",answer:"Catherine",alt:["kate","kate middleton"],hint:"Prinses van Wales, trouwde in 2011 met prins William",level:3},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Queen_Letizia_of_Spain_%28cropped%29.jpg/400px-Queen_Letizia_of_Spain_%28cropped%29.jpg",answer:"Letizia",alt:["koningin letizia"],hint:"Spaanse koningin, voormalig televisiepresentatrice bij TVE",level:4},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Prince_William_2021_%28cropped%29.jpg/400px-Prince_William_2021_%28cropped%29.jpg",answer:"William",alt:["prins william","prince of wales"],hint:"Prins van Wales, Brits troonopvolger, diende als reddingshelikopterpiloot",level:4},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Harald_V_of_Norway_2021.jpg/400px-Harald_V_of_Norway_2021.jpg",answer:"Harald V",alt:["harold","noorse koning"],hint:"Noorse monarch, nam deel aan drie Olympische Spelen als zeiler",level:4},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Frederik_X_of_Denmark_%28cropped%29.jpg/400px-Frederik_X_of_Denmark_%28cropped%29.jpg",answer:"Frederik X",alt:["frederik","deense koning"],hint:"Huidige Deense monarch, besteeg troon 14 januari 2024, vrouw is Australisch",level:5},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Albert_II_of_Monaco.jpg/400px-Albert_II_of_Monaco.jpg",answer:"Albert II",alt:["albert","prins albert monaco"],hint:"Vorst van Monaco, milieu-activist, leidde expedities naar de Noordpool",level:5},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Carl_XVI_Gustaf_2022.jpg/400px-Carl_XVI_Gustaf_2022.jpg",answer:"Carl XVI Gustaf",alt:["carl xvi","zweedse koning"],hint:"Zweedse monarch, al meer dan 50 jaar op de troon (seit 1973)",level:5},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Victoria%2C_Crown_Princess_of_Sweden_%282018%29.jpg/400px-Victoria%2C_Crown_Princess_of_Sweden_%282018%29.jpg",answer:"Victoria",alt:["kroonprinses victoria","victoria zweden"],hint:"Zweedse kroonprinses, ontmoette man Daniel Westling in zijn sportschool",level:6},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/King_Philippe_of_Belgium_%28cropped%29.jpg/400px-King_Philippe_of_Belgium_%28cropped%29.jpg",answer:"Filip",alt:["philippe","belgische koning"],hint:"Huidige Belgische monarch (2013), voormalig militaire F-16-piloot",level:6},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Queen_Mary_of_Denmark_%28cropped%29.jpg/400px-Queen_Mary_of_Denmark_%28cropped%29.jpg",answer:"Mary",alt:["koningin mary","mary denemarken"],hint:"Deense koningin, geboren in Australie, ontmoette Frederik bij Sydney 2000",level:6},
+  {img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Haakon_Magnus_of_Norway_2022.jpg/400px-Haakon_Magnus_of_Norway_2022.jpg",answer:"Haakon",alt:["haakon magnus","kroonprins haakon"],hint:"Noorse kroonprins, trouwde in 2001 met alleenstaande moeder Mette-Marit",level:7},
+];
+
+var MC_QS = [
+  {q:"Wie is de huidige koning van Nederland?",options:["Willem-Alexander","Constantijn","Johan Friso","Bernhard"],answer:"Willem-Alexander",uitleg:"Willem-Alexander besteeg op 30 april 2013 de troon na de abdicatie van zijn moeder Beatrix.",level:1},
+  {q:"In welk jaar overleed prinses Diana in Parijs?",options:["1994","1997","1999","2002"],answer:"1997",uitleg:"Diana overleed op 31 augustus 1997 in de Pont de l'Alma-tunnel in Parijs.",level:1},
+  {q:"Welke Britse koningin regeerde het langst, namelijk 70 jaar?",options:["Victoria","Elizabeth I","Elizabeth II","Mary II"],answer:"Elizabeth II",uitleg:"Elizabeth II regeerde van 1952 tot 2022 — een record van 70 jaar en 214 dagen.",level:1},
+  {q:"Welke beroemde actrice werd prinses van Monaco?",options:["Audrey Hepburn","Marilyn Monroe","Grace Kelly","Ingrid Bergman"],answer:"Grace Kelly",uitleg:"Grace Kelly won een Oscar en trouwde in 1956 met prins Rainier III van Monaco.",level:1},
+  {q:"Welke naam draagt de Britse koninklijke familie?",options:["Tudor","Stuart","Windsor","Plantagenet"],answer:"Windsor",uitleg:"De naam Windsor werd in 1917 aangenomen door George V om de Duits klinkende naam Saxe-Coburg-Gotha te vervangen.",level:2},
+  {q:"Welke Engelse koning had zes vrouwen?",options:["George III","Henry VII","Henry VIII","Charles II"],answer:"Henry VIII",uitleg:"Hendrik VIII trouwde zes keer. Anne Boleyn en Catherine Howard werden onthoofd.",level:2},
+  {q:"In welk land is koningin Maxima van Nederland geboren?",options:["Brazilie","Argentinie","Uruguay","Venezuela"],answer:"Argentinie",uitleg:"Maxima Zorreguieta werd geboren op 17 mei 1971 in Buenos Aires, Argentinie.",level:2},
+  {q:"Welke Deense koningin abdiceerde op 14 januari 2024?",options:["Ingrid","Margrethe II","Alexandra","Anne-Marie"],answer:"Margrethe II",uitleg:"Margrethe II regeerde 52 jaar. Ze kondigde haar abdicatie aan op oudejaarsavond 2023.",level:3},
+  {q:"Hoe heet de kroonprinses van Spanje?",options:["Sofia","Elena","Cristina","Leonor"],answer:"Leonor",uitleg:"Kroonprinses Leonor is geboren op 31 oktober 2005 en studeerde aan de Universiteit van Oxford.",level:3},
+  {q:"Welke Russische tsaar werd in 1918 geexecuteerd met zijn familie?",options:["Alexander III","Nicolaas II","Alexander II","Paul I"],answer:"Nicolaas II",uitleg:"Nicolaas II en zijn hele familie werden op 17 juli 1918 geexecuteerd door de Bolsjewieken in Jekaterinenburg.",level:3},
+  {q:"Welke Europese staat is het enige Groothertogdom ter wereld?",options:["Monaco","Liechtenstein","Luxemburg","Andorra"],answer:"Luxemburg",uitleg:"Luxemburg is het enige resterende soevereine Groothertogdom ter wereld.",level:4},
+  {q:"Met wie trouwde prins Harry in mei 2018?",options:["Pippa Middleton","Meghan Markle","Chelsy Davy","Cressida Bonas"],answer:"Meghan Markle",uitleg:"Harry en Meghan trouwden op 19 mei 2018 in de St. George's Chapel in Windsor Castle.",level:4},
+  {q:"Welke Belgische koning weigerde in 1990 een wet te ondertekenen vanwege zijn geloof?",options:["Albert II","Leopold III","Boudewijn","Filip"],answer:"Boudewijn",uitleg:"Boudewijn weigerde de abortuswet te ondertekenen. De Belgische regering verklaarde hem tijdelijk onbekwaam om te regeren.",level:4},
+  {q:"Hoe heet de autobiografie van prins Harry uit 2023?",options:["The Crown","Spare","Reserved","Heir"],answer:"Spare",uitleg:"Spare verscheen in januari 2023 en bevat explosive onthullingen over de Britse koninklijke familie.",level:5},
+  {q:"Welk land voerde als eerste absolute primogenituur in?",options:["Nederland","Denemarken","Zweden","Noorwegen"],answer:"Zweden",uitleg:"Zweden voerde in 1980 absolute primogenituur in, waardoor Victoria voor haar broer Carl Philip als troonopvolger staat.",level:5},
+  {q:"Welke Spaanse infanta verloor haar titel door het Noos corruptieschandaal?",options:["Elena","Cristina","Sofia","Leonor"],answer:"Cristina",uitleg:"Infanta Cristina was verdachte in de zaak rondom haar man Inaki Urdangarin die in 2017 werd veroordeeld.",level:5},
+  {q:"In welk jaar abdiceerde Edward VIII van de Britse troon?",options:["1934","1936","1938","1940"],answer:"1936",uitleg:"Edward VIII abdiceerde op 11 december 1936 om te trouwen met de twee keer gescheiden Wallis Simpson.",level:6},
+  {q:"Welke Oostenrijkse keizerin werd in 1898 vermoord in Geneve?",options:["Maria Theresia","Zita","Elisabeth","Stephanie"],answer:"Elisabeth",uitleg:"Keizerin Elisabeth (Sisi) werd op 10 september 1898 neergestoken door de Italiaanse anarchist Luigi Lucheni.",level:6},
+  {q:"Hoe heet het zomerpaleis van de Spaanse royals op Mallorca?",options:["La Zarzuela","El Pardo","Marivent","La Granja"],answer:"Marivent",uitleg:"Marivent Palace op Mallorca is het traditionele zomerverblijf van de Spaanse koninklijke familie.",level:7},
+  {q:"Welke Noorse koningin liet haar man acht jaar wachten op toestemming voor het huwelijk?",options:["Mette-Marit","Sonja","Martha","Alexandra"],answer:"Sonja",uitleg:"Harald V wachtte acht jaar voor het Noorse parlement instemde met zijn huwelijk met de burgerlijke Sonja Haraldsen.",level:7},
+];
+
+var ASSOC_QS = [
+  {chips:["Argentinie","econome","Buenos Aires","tango","bankier"],answer:"Maxima",uitleg:"Koningin Maxima studeerde economie in Buenos Aires en werkte als investeringsbankier voor ze prins Willem-Alexander ontmoette.",level:1},
+  {chips:["Corgi honden","Buckingham","kroning 1953","diamanten jubileum","70 jaar troon"],answer:"Elizabeth II",uitleg:"Elizabeth II stond bekend om haar Corgi-honden en regeerde 70 jaar — het langste van alle Britse monarchen.",level:1},
+  {chips:["landmijnen","Spencer","bloemenzee","Parijs 1997","tunnel auto-ongeluk"],answer:"Diana",uitleg:"Diana was geliefd om haar werk voor landmijnslachtoffers. Ze overleed in 1997 in een Parijse tunnel.",level:1},
+  {chips:["Hollywood","Oscar","Hitchcock","Rainier","huwelijk 1956"],answer:"Grace Kelly",uitleg:"Grace Kelly won een Oscar voor The Country Girl en trouwde in 1956 met prins Rainier III van Monaco.",level:1},
+  {chips:["Suits","Californie","Sussex","Oprah interview","onthullingen 2021"],answer:"Meghan Markle",uitleg:"Meghan Markle was actrice in Suits. Het Oprah-interview in 2021 met Harry was wereldwijd nieuws.",level:2},
+  {chips:["Radio Oranje","Londen","verzet","ballingschap 1940","fietskoningin"],answer:"Wilhelmina",uitleg:"Koningin Wilhelmina leidde vanuit Londen de Nederlandse verzetsbeweging en sprak de natie toe via Radio Oranje.",level:2},
+  {chips:["Australie","Sydney 2000","Donaldson","marketeer","Olympische Spelen"],answer:"Mary",uitleg:"Mary Donaldson ontmoette de Deense kroonprins tijdens de Olympische Spelen van 2000 in Sydney.",level:2},
+  {chips:["abdicatie","75e verjaardag","30 april 2013","drie zonen","Claus overleed"],answer:"Beatrix",uitleg:"Beatrix deed op haar 75e verjaardag, 30 april 2013, afstand van de troon ten gunste van haar zoon Willem-Alexander.",level:3},
+  {chips:["Tolkien illustraties","schilder","pseudoniem","2024 abdicatie","kunstenares Denemarken"],answer:"Margrethe II",uitleg:"Margrethe II illustreerde de Deense Tolkien-vertaling onder pseudoniem en was ook een getalenteerd schilder.",level:3},
+  {chips:["TVE nieuwslezeres","journaliste","Ortiz","huwelijk 2004","Spanje"],answer:"Letizia",uitleg:"Letizia Ortiz werkte als televisiejournaliste bij TVE voordat ze in 2004 trouwde met de Spaanse kroonprins.",level:3},
+  {chips:["Lockheed","smeergeld","vliegtuigfabrikant","militaire titels verloren","vader Beatrix"],answer:"Prins Bernhard",uitleg:"Prins Bernhard accepteerde smeergeld van Lockheed en moest al zijn militaire functies neerleggen in 1976.",level:4},
+  {chips:["personal trainer","sportschool Stockholm","Estelle en Oscar","troonopvolger","huwelijk 2010"],answer:"Kroonprinses Victoria",uitleg:"Victoria ontmoette haar man Daniel Westling in zijn sportschool in Stockholm. Ze trouwden in 2010.",level:4},
+  {chips:["Botswana","olifantenjacht","corruptie","populariteitsverlies","abdicatie 2014"],answer:"Juan Carlos I",uitleg:"Juan Carlos I verloor populariteit na een olifantenjacht in Botswana en corruptieschandalen, waarna hij abdiceerde.",level:4},
+  {chips:["zeilen","drie olympiades","1964 1968 1972","vaarder","Noorwegen sport"],answer:"Harald V",uitleg:"Harald V van Noorwegen nam als professioneel zeiler deel aan drie opeenvolgende Olympische Spelen.",level:5},
+  {chips:["F-16","militaire piloot","Belgische luchtmacht","troonbestijging 2013","Mathilde"],answer:"Koning Filip",uitleg:"Koning Filip van Belgie was een militaire piloot die F-16's vloog voor hij de troon besteeg in 2013.",level:5},
+  {chips:["Formule 3","coureur","grondwetswijziging 1980","verloor troonopvolging","broer Victoria"],answer:"Carl Philip van Zweden",uitleg:"Prins Carl Philip verloor zijn positie als troonopvolger na de Zweedse grondwetswijziging van 1980 en werd autoracecoureur.",level:5},
+  {chips:["Geneve","dolksteek","september 1898","anarchist Lucheni","Frans Jozef weduwnaar"],answer:"Keizerin Elisabeth Sisi",uitleg:"Sisi werd op 10 september 1898 neergestoken in Geneve. Ze overleed dezelfde dag.",level:6},
+  {chips:["Noos stichting","fraude","veroordeeld 2017","overheidsgeld","man Infanta Cristina"],answer:"Inaki Urdangarin",uitleg:"Inaki Urdangarin werd veroordeeld voor het verduisteren van overheidsgeld via zijn Instituto Noos.",level:6},
+  {chips:["katholicisme","Rome","1654 abdicatie","17e-eeuws Zweden","kunstwerken verzamelaar"],answer:"Koningin Christina",uitleg:"Christina van Zweden abdiceerde in 1654, bekeerde zich tot het katholicisme en leefde de rest van haar leven in Rome.",level:7},
+  {chips:["oorlogskoningin","vluchtte mei 1940","Radio Oranje","moeder Juliana","ballingschap Londen"],answer:"Wilhelmina",uitleg:"Wilhelmina vluchtte in mei 1940 naar Londen en werd het symbool van het Nederlandse verzet.",level:7},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var roundId = null, questions = [], idx = 0, score = 0, missed = [];
+var timerInterval = null, timeLeft = 45;
+var revealedChips = 0, chipRevealTimer = null;
+var hintShown = false;
+
+var gs = JSON.parse(localStorage.getItem('tf_gs3') || '{"rounds":0,"correct":0,"total":0}');
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(function init(){
+  var tc = ['#7B4FFF','','#FF9A00','','#00D46A','','#FF3B5C','','#00C8FF'];
+  var tg = document.getElementById('logo-tiles');
+  tc.forEach(function(c){
+    var d = document.createElement('div');
+    d.className = 'lt';
+    d.style.background = c || '#252530';
+    if(c) d.style.boxShadow = '0 0 5px ' + c + '99';
+    tg.appendChild(d);
+  });
+  updateHomeStats();
+})();
+
+function updateHomeStats(){
+  if(gs.rounds > 0){
+    document.getElementById('home-stats').style.display = 'block';
+    document.getElementById('st-rounds').textContent = gs.rounds;
+    document.getElementById('st-correct').textContent = gs.correct;
+    document.getElementById('st-pct').textContent = Math.round(gs.correct/gs.total*100) + '%';
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelector('.scroll').scrollTop = 0;
+}
+
+function goHome(){
+  stopTimer(); stopChipTimer();
+  showScreen('home');
+  roundId = null;
+  updateHomeStats();
+}
+
+function goMenu(){
+  stopTimer(); stopChipTimer();
+  if(idx > 0) showResults();
+  else goHome();
+}
+
+function retryRound(){ startRound(roundId); }
+
+// ── ROUND START ───────────────────────────────────────────────────────────────
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function startRound(id){
+  roundId = id;
+  idx = 0; score = 0; missed = [];
+  if(id === 'photo') questions = shuffle(PHOTO_QS).slice(0, 20);
+  else if(id === 'mc') questions = shuffle(MC_QS).slice(0, 20);
+  else questions = shuffle(ASSOC_QS).slice(0, 20);
+  showScreen('question');
+  loadQuestion();
+}
+
+// ── QUESTION LOADER ───────────────────────────────────────────────────────────
+function loadQuestion(){
+  stopTimer(); stopChipTimer(); hintShown = false;
+  var q = questions[idx];
+
+  // Progress
+  document.getElementById('prog-label').textContent = 'Vraag ' + (idx+1) + ' / ' + questions.length;
+  var pct = Math.round((idx+1)/questions.length*100);
+  document.getElementById('prog-pct').textContent = pct + '%';
+  var color = roundId==='photo' ? '#7B4FFF' : roundId==='mc' ? '#FF9A00' : '#00D46A';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').style.background = color;
+
+  // Badge
+  var badge = document.getElementById('q-badge');
+  var labels = {photo:'📸 Fotoronde', mc:'🎯 Multiple Choice', assoc:'🔗 Associaties'};
+  badge.textContent = labels[roundId];
+  badge.style.background = color + '22';
+  badge.style.border = '1px solid ' + color + '55';
+  badge.style.color = color;
+
+  // Hide all blocks + reveal
+  ['photo-block','mc-block','assoc-block','reveal-block'].forEach(function(b){
+    document.getElementById(b).style.display = 'none';
+  });
+
+  // Timer reset
+  resetTimer();
+
+  if(roundId === 'photo') loadPhoto(q);
+  else if(roundId === 'mc') loadMC(q);
+  else loadAssoc(q);
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function resetTimer(){
+  timeLeft = 45;
+  var num = document.getElementById('timer-num');
+  var fill = document.getElementById('timer-fill');
+  num.textContent = '45';
+  num.style.color = '#7B4FFF';
+  fill.style.width = '100%';
+  fill.style.background = '#7B4FFF';
+}
+
+function startTimer(onDone){
+  timerInterval = setInterval(function(){
+    timeLeft--;
+    var num = document.getElementById('timer-num');
+    var fill = document.getElementById('timer-fill');
+    num.textContent = timeLeft;
+    fill.style.width = (timeLeft/45*100) + '%';
+    if(timeLeft <= 8){ num.style.color='#FF3B5C'; fill.style.background='#FF3B5C'; }
+    else if(timeLeft <= 18){ num.style.color='#FF9A00'; fill.style.background='#FF9A00'; }
+    if(timeLeft <= 0){ stopTimer(); onDone(); }
+  }, 1000);
+}
+
+function stopTimer(){ clearInterval(timerInterval); timerInterval = null; }
+function stopChipTimer(){ clearInterval(chipRevealTimer); chipRevealTimer = null; }
+
+// ── PHOTO ROUND ───────────────────────────────────────────────────────────────
+function loadPhoto(q){
+  var img = document.getElementById('photo-img');
+  var err = document.getElementById('photo-err');
+  img.style.display = 'block'; err.style.display = 'none';
+  img.src = q.img;
+  document.getElementById('photo-err-hint').textContent = 'Hint: ' + q.hint;
+  setDiffBadge('photo-diff', q.level);
+  document.getElementById('photo-hint-strip').className = 'hint-strip';
+  document.getElementById('photo-hint-strip').innerHTML = '<strong style="color:#FF9A00">Hint:</strong> ' + q.hint;
+  document.getElementById('photo-hint-btn').disabled = false;
+  document.getElementById('photo-hint-btn').style.color = '';
+  document.getElementById('photo-input').value = '';
+  document.getElementById('photo-block').style.display = 'block';
+  document.getElementById('photo-actions').style.display = 'grid';
+  setTimeout(function(){ document.getElementById('photo-input').focus(); }, 150);
+  startTimer(function(){ photoTimeUp(q); });
+}
+
+function showPhotoHint(){
+  if(hintShown) return; hintShown = true;
+  document.getElementById('photo-hint-strip').className = 'hint-strip show';
+  document.getElementById('photo-hint-btn').disabled = true;
+  document.getElementById('photo-hint-btn').style.color = '#444';
+}
+
+function checkPhoto(){
+  var q = questions[idx];
+  var val = document.getElementById('photo-input').value.trim();
+  if(!val) return;
+  stopTimer();
+  var ok = isOk(val, q.answer, q.alt);
+  if(ok) score++; else missed.push({q:'Foto: '+q.answer, a:q.answer});
+  showReveal(ok, ok ? 'Correct!' : 'Antwoord: ' + q.answer, q.hint, false);
+}
+
+function photoTimeUp(q){
+  missed.push({q:'Foto: '+q.answer, a:q.answer});
+  showReveal(false, 'Tijd op!', q.hint, true);
+}
+
+// ── MC ROUND ──────────────────────────────────────────────────────────────────
+function loadMC(q){
+  setDiffBadge('mc-diff', q.level);
+  document.getElementById('mc-num').textContent = 'Vraag ' + (idx+1) + '/20';
+  document.getElementById('mc-text').textContent = q.q;
+  var opts = shuffle(q.options);
+  var letters = ['A','B','C','D'];
+  var grid = document.getElementById('mc-options');
+  grid.innerHTML = '';
+  opts.forEach(function(opt, i){
+    var btn = document.createElement('button');
+    btn.className = 'mc-opt';
+    btn.style.background = '#0E0E1A';
+    btn.style.border = '1px solid rgba(255,255,255,0.08)';
+    btn.style.color = '#F0EFF8';
+    btn.innerHTML = '<span class="mc-letter" style="color:#FF9A00">' + letters[i] + '</span>' + opt;
+    btn.onclick = function(){ pickMC(opt, q, opts); };
+    grid.appendChild(btn);
+  });
+  document.getElementById('mc-block').style.display = 'block';
+  startTimer(function(){ mcTimeUp(q, opts); });
+}
+
+function pickMC(picked, q, opts){
+  stopTimer();
+  var ok = picked === q.answer;
+  if(ok) score++; else missed.push({q:q.q, a:q.answer});
+  // Color options
+  var btns = document.getElementById('mc-options').querySelectorAll('.mc-opt');
+  var letters = ['A','B','C','D'];
+  // We need to match opts order
+  btns.forEach(function(btn, i){
+    var opt = opts[i];
+    if(opt === q.answer){ btn.style.background='rgba(0,212,106,0.12)'; btn.style.border='1px solid rgba(0,212,106,0.5)'; btn.style.color='#00D46A'; btn.querySelector('.mc-letter').style.color='#00D46A'; }
+    else if(opt === picked){ btn.style.background='rgba(255,59,92,0.12)'; btn.style.border='1px solid rgba(255,59,92,0.5)'; btn.style.color='#FF3B5C'; btn.querySelector('.mc-letter').style.color='#FF3B5C'; }
+    else{ btn.style.color='#444'; btn.querySelector('.mc-letter').style.color='#333'; }
+    btn.onclick = null;
+  });
+  showReveal(ok, ok ? 'Correct!' : 'Antwoord: ' + q.answer, q.uitleg, false);
+}
+
+function mcTimeUp(q, opts){
+  missed.push({q:q.q, a:q.answer});
+  showReveal(false, 'Tijd op!', q.uitleg, true);
+}
+
+// ── ASSOC ROUND ───────────────────────────────────────────────────────────────
+function loadAssoc(q){
+  revealedChips = 1;
+  setDiffBadge('assoc-diff', q.level);
+  renderChips(q);
+  document.getElementById('assoc-input').value = '';
+  document.getElementById('assoc-hint-strip').className = 'hint-strip';
+  document.getElementById('assoc-actions').style.display = 'grid';
+  document.getElementById('assoc-block').style.display = 'block';
+  updateRevealBtn(q);
+  setTimeout(function(){ document.getElementById('assoc-input').focus(); }, 150);
+  // Auto-reveal every 8 seconds
+  chipRevealTimer = setInterval(function(){
+    if(revealedChips < q.chips.length){ revealedChips++; renderChips(q); updateRevealBtn(q); }
+    else stopChipTimer();
+  }, 8000);
+  startTimer(function(){ assocTimeUp(q); });
+}
+
+function renderChips(q){
+  var wrap = document.getElementById('assoc-chips');
+  wrap.innerHTML = '';
+  q.chips.forEach(function(chip, i){
+    var d = document.createElement('div');
+    d.className = 'chip ' + (i < revealedChips ? 'shown' : 'hidden');
+    d.textContent = i < revealedChips ? chip : '...';
+    wrap.appendChild(d);
+  });
+}
+
+function updateRevealBtn(q){
+  var btn = document.getElementById('assoc-reveal-btn');
+  btn.disabled = revealedChips >= q.chips.length;
+  btn.style.color = revealedChips >= q.chips.length ? '#333' : '';
+}
+
+function revealOneChip(){
+  var q = questions[idx];
+  if(revealedChips < q.chips.length){ revealedChips++; renderChips(q); updateRevealBtn(q); }
+}
+
+function checkAssoc(){
+  var q = questions[idx];
+  var val = document.getElementById('assoc-input').value.trim();
+  if(!val) return;
+  stopTimer(); stopChipTimer();
+  revealedChips = q.chips.length; renderChips(q);
+  var ok = isOk(val, q.answer, []);
+  if(ok) score++; else missed.push({q:q.chips.join(' / '), a:q.answer});
+  showReveal(ok, ok ? 'Correct!' : 'Antwoord: ' + q.answer, q.uitleg, false);
+}
+
+function assocTimeUp(q){
+  stopChipTimer();
+  revealedChips = q.chips.length; renderChips(q);
+  missed.push({q:q.chips.join(' / '), a:q.answer});
+  showReveal(false, 'Tijd op!', q.uitleg, true);
+}
+
+// ── SKIP ──────────────────────────────────────────────────────────────────────
+function skipCurrent(){
+  stopTimer(); stopChipTimer();
+  var q = questions[idx];
+  if(roundId === 'photo') missed.push({q:'Foto: '+q.answer, a:q.answer});
+  else if(roundId === 'mc') missed.push({q:q.q, a:q.answer});
+  else{ revealedChips = q.chips.length; renderChips(q); missed.push({q:q.chips.join(' / '), a:q.answer}); }
+  showReveal(false, 'Overgeslagen — antwoord: ' + q.answer, roundId==='mc'?q.uitleg:q.hint||q.uitleg, false);
+}
+
+// ── REVEAL ────────────────────────────────────────────────────────────────────
+function showReveal(ok, title, body, timeUp){
+  // Hide input/actions
+  ['photo-actions','assoc-actions'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  var card = document.getElementById('reveal-card');
+  card.style.background = ok ? 'rgba(0,212,106,0.08)' : 'rgba(255,59,92,0.08)';
+  card.style.border = '1px solid ' + (ok ? 'rgba(0,212,106,0.3)' : 'rgba(255,59,92,0.3)');
+  document.getElementById('reveal-icon').textContent = ok ? '✓' : '✗';
+  document.getElementById('reveal-title').textContent = title;
+  document.getElementById('reveal-title').style.color = ok ? '#00D46A' : '#FF3B5C';
+  document.getElementById('reveal-body').textContent = body || '';
+  var isLast = idx + 1 >= questions.length;
+  document.getElementById('btn-next').textContent = isLast ? 'Resultaten →' : 'Volgende →';
+  document.getElementById('reveal-block').style.display = 'block';
+}
+
+function nextQuestion(){
+  idx++;
+  if(idx >= questions.length) showResults();
+  else loadQuestion();
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────────────────
+function showResults(){
+  var total = questions.length;
+  var pct = Math.round(score/total*100);
+  var grade = pct>=90?'Excellent!':pct>=70?'Goed gedaan!':pct>=50?'Aardig!':'Blijven oefenen!';
+  var gc = pct>=90?'#00D46A':pct>=70?'#A880FF':pct>=50?'#FF9A00':'#FF3B5C';
+
+  // Tiles
+  var tc = ['#7B4FFF','#FF9A00','#00D46A','#FF3B5C','#00C8FF'];
+  var tiles = document.getElementById('res-tiles');
+  tiles.innerHTML = '';
+  for(var i=0;i<25;i++){
+    var d = document.createElement('div');
+    d.className = 'res-tile';
+    var on = i/25*100 < pct;
+    d.style.background = on ? tc[i%tc.length] : '#1E1B18';
+    if(on) d.style.boxShadow = '0 0 4px ' + tc[i%tc.length] + '80';
+    tiles.appendChild(d);
+  }
+
+  document.getElementById('res-grade').textContent = grade;
+  document.getElementById('res-grade').style.color = gc;
+  var labels = {photo:'Fotoronde',mc:'Multiple Choice',assoc:'Associatieronde'};
+  document.getElementById('res-sub').textContent = labels[roundId] + ' afgerond';
+  document.getElementById('res-total').textContent = total;
+  document.getElementById('res-correct').textContent = score;
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-pct').style.color = gc;
+
+  // Missed
+  var wrap = document.getElementById('missed-wrap');
+  wrap.innerHTML = '';
+  if(missed.length > 0){
+    var lbl = document.createElement('div');
+    lbl.className = 'missed-lbl';
+    lbl.textContent = 'Nog te leren (' + missed.length + ')';
+    wrap.appendChild(lbl);
+    missed.forEach(function(m){
+      var row = document.createElement('div');
+      row.className = 'missed-row';
+      row.innerHTML = '<div class="missed-q">' + m.q + '</div><div class="missed-a">' + m.a + '</div>';
+      wrap.appendChild(row);
+    });
+  }
+
+  // Save global stats
+  gs.rounds++;
+  gs.correct += score;
+  gs.total += total;
+  localStorage.setItem('tf_gs3', JSON.stringify(gs));
+
+  var color = roundId==='photo'?'#7B4FFF':roundId==='mc'?'#FF9A00':'#00D46A';
+  var glow = roundId==='photo'?'rgba(123,79,255,0.35)':roundId==='mc'?'rgba(255,154,0,0.35)':'rgba(0,212,106,0.3)';
+  document.getElementById('btn-retry').style.background = color;
+  document.getElementById('btn-retry').style.boxShadow = '0 4px 20px ' + glow;
+
+  showScreen('results');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function norm(s){
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').trim();
+}
+
+function isOk(inp, answer, alts){
+  var ni = norm(inp);
+  var targets = [answer].concat(alts||[]).map(norm);
+  for(var i=0;i<targets.length;i++){
+    var na = targets[i];
+    if(ni===na) return true;
+    if(na.indexOf(ni)>=0 && ni.length>=3) return true;
+    if(ni.indexOf(na)>=0 && na.length>=3) return true;
+    var words = na.split(' ');
+    for(var j=0;j<words.length;j++){ if(words[j].length>3 && ni.indexOf(words[j])>=0) return true; }
+  }
+  return false;
+}
+
+function setDiffBadge(id, level){
+  var el = document.getElementById(id);
+  var d = level<=2?{l:'Makkelijk',c:'#00D46A'}:level<=4?{l:'Gemiddeld',c:'#FF9A00'}:{l:'Moeilijk',c:'#FF3B5C'};
+  el.textContent = d.l;
+  el.style.background = d.c + '18';
+  el.style.color = d.c;
+  el.style.border = '1px solid ' + d.c + '40';
+}
+
+// Enter key
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  if(document.getElementById('screen-question').classList.contains('active')){
+    if(document.getElementById('reveal-block').style.display !== 'none'){ nextQuestion(); return; }
+    if(roundId==='photo') checkPhoto();
+    else if(roundId==='assoc') checkAssoc();
+  }
+});
+</script>
+</body>
+</html>
