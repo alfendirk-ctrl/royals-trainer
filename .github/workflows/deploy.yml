@@ -47,11 +47,24 @@ jobs:
             ["mary"]="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Queen_Mary_of_Denmark_%28cropped%29.jpg/400px-Queen_Mary_of_Denmark_%28cropped%29.jpg"
             ["haakon"]="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Haakon_Magnus_of_Norway_2022.jpg/400px-Haakon_Magnus_of_Norway_2022.jpg"
           )
+          fail=0
           for name in "${!imgs[@]}"; do
-            curl -sL --max-time 20 -A "Wikimedia Commons image download" \
-              -o "images/${name}.jpg" "${imgs[$name]}"
-            echo "$name: $(stat -c%s images/${name}.jpg) bytes"
+            code=$(curl -sL --max-time 20 \
+              -A "RoyalsTrainerBot/1.0 (https://github.com/alfendirk-ctrl/royals-trainer; contact: alfendirk@gmail.com) curl" \
+              -w "%{http_code}" \
+              -o "images/${name}.jpg" "${imgs[$name]}")
+            size=$(stat -c%s "images/${name}.jpg")
+            ctype=$(file -b --mime-type "images/${name}.jpg")
+            echo "$name: http=$code size=$size type=$ctype"
+            if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
+              echo "::error::Failed to download $name (http=$code type=$ctype)"
+              fail=1
+            fi
           done
+          if [ "$fail" = "1" ]; then
+            echo "::error::One or more royal photos failed to download"
+            exit 1
+          fi
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
