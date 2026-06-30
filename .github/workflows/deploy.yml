@@ -48,9 +48,20 @@ jobs:
             ["haakon"]="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Haakon_Magnus_of_Norway_2022.jpg/400px-Haakon_Magnus_of_Norway_2022.jpg"
           )
           fail=0
+          first=1
           for name in "${!imgs[@]}"; do
+            if [ "$first" = "1" ]; then
+              echo "--- debug headers for $name ---"
+              curl -sL --max-time 20 -D - \
+                -A "Mozilla/5.0 (compatible; RoyalsTrainerBot/1.0; +https://github.com/alfendirk-ctrl/royals-trainer)" \
+                -o "images/${name}.jpg" "${imgs[$name]}" | head -40
+              echo "--- response body (first 500 bytes) ---"
+              head -c 500 "images/${name}.jpg"
+              echo ""
+              first=0
+            fi
             code=$(curl -sL --max-time 20 \
-              -A "RoyalsTrainerBot/1.0 (https://github.com/alfendirk-ctrl/royals-trainer; contact: alfendirk@gmail.com) curl" \
+              -A "Mozilla/5.0 (compatible; RoyalsTrainerBot/1.0; +https://github.com/alfendirk-ctrl/royals-trainer)" \
               -w "%{http_code}" \
               -o "images/${name}.jpg" "${imgs[$name]}")
             size=$(stat -c%s "images/${name}.jpg")
