@@ -24,67 +24,71 @@ jobs:
 
       - name: Download royal photos
         env:
-          RESOLVE_PY: |
-            import urllib.request, urllib.parse, json, sys
-            fname = sys.argv[1]
-            enc = urllib.parse.quote(fname, safe='')
-            url = ('https://commons.wikimedia.org/w/api.php?action=query'
-                   '&titles=File:' + enc + '&redirects&prop=imageinfo'
-                   '&iiprop=canonicaltitle&format=json')
+          GET_FILENAME_PY: |
+            import urllib.request, urllib.parse, json, sys, re
+            wiki_title = sys.argv[1]
+            enc = urllib.parse.quote(wiki_title, safe='')
+            url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + enc
             req = urllib.request.Request(url, headers={
-                'User-Agent': 'RoyalsTrainer/1.0 (alfendirk@gmail.com)'})
+                'User-Agent': 'RoyalsTrainer/1.0 (alfendirk@gmail.com)',
+                'Accept': 'application/json'})
             try:
                 with urllib.request.urlopen(req, timeout=15) as r:
                     d = json.loads(r.read())
-                pages = d.get('query', {}).get('pages', {})
-                for p in pages.values():
-                    title = p.get('title', '')
-                    if title.startswith('File:'):
-                        print(title[5:])
-                        sys.exit(0)
-                print(fname)
-            except Exception:
-                print(fname)
+                src = d.get('thumbnail', {}).get('source', '')
+                m = re.search(r'/thumb/[0-9a-f]/[0-9a-f]{2}/([^/]+)/', src)
+                if m:
+                    print(m.group(1))
+                    sys.exit(0)
+                print('NOT_FOUND', file=sys.stderr)
+                sys.exit(1)
+            except Exception as e:
+                print(f'ERROR: {e}', file=sys.stderr)
+                sys.exit(1)
         run: |
           mkdir -p images
-          echo "$RESOLVE_PY" > /tmp/resolve.py
-          declare -A imgs=(
-            ["willem-alexander"]="King_Willem-Alexander_June_2015_(1).JPG"
-            ["elizabeth-ii"]="Queen_Elizabeth_II_in_March_2015.jpg"
-            ["diana"]="Princess_Diana_1997_(1).jpg"
-            ["charles-iii"]="King_Charles_III_(cropped).jpg"
-            ["maxima"]="Queen_Maxima_of_the_Netherlands_(cropped).jpg"
-            ["felipe-vi"]="King_Felipe_VI_of_Spain.jpg"
-            ["grace-kelly"]="Grace_Kelly_portrait.jpg"
-            ["beatrix"]="Beatrix_van_Nederland_2011.jpg"
-            ["margrethe-ii"]="Margrethe_II_of_Denmark_2023.jpg"
-            ["catherine"]="Catherine,_Princess_of_Wales_2023.jpg"
-            ["letizia"]="Queen_Letizia_of_Spain_(cropped).jpg"
-            ["william"]="Prince_William_2021_(cropped).jpg"
-            ["harald-v"]="Harald_V_of_Norway_2021.jpg"
-            ["frederik-x"]="Frederik_X_of_Denmark_(cropped).jpg"
-            ["albert-ii"]="Albert_II_of_Monaco.jpg"
-            ["carl-xvi-gustaf"]="Carl_XVI_Gustaf_2022.jpg"
-            ["victoria"]="Victoria,_Crown_Princess_of_Sweden_(2018).jpg"
-            ["filip"]="King_Philippe_of_Belgium_(cropped).jpg"
-            ["mary"]="Queen_Mary_of_Denmark_(cropped).jpg"
-            ["haakon"]="Haakon_Magnus_of_Norway_2022.jpg"
+          echo "$GET_FILENAME_PY" > /tmp/get_filename.py
+          declare -A wiki=(
+            ["willem-alexander"]="Willem-Alexander of the Netherlands"
+            ["elizabeth-ii"]="Elizabeth II"
+            ["diana"]="Diana, Princess of Wales"
+            ["charles-iii"]="Charles III"
+            ["maxima"]="M%C3%A1xima of the Netherlands"
+            ["felipe-vi"]="Felipe VI"
+            ["grace-kelly"]="Grace Kelly"
+            ["beatrix"]="Beatrix of the Netherlands"
+            ["margrethe-ii"]="Margrethe II"
+            ["catherine"]="Catherine, Princess of Wales"
+            ["letizia"]="Letizia of Spain"
+            ["william"]="William, Prince of Wales"
+            ["harald-v"]="Harald V of Norway"
+            ["frederik-x"]="Frederik X of Denmark"
+            ["albert-ii"]="Albert II, Prince of Monaco"
+            ["carl-xvi-gustaf"]="Carl XVI Gustaf of Sweden"
+            ["victoria"]="Victoria, Crown Princess of Sweden"
+            ["filip"]="Philippe of Belgium"
+            ["mary"]="Mary, Queen of Denmark"
+            ["haakon"]="Haakon, Crown Prince of Norway"
           )
           fail=0
-          for name in "${!imgs[@]}"; do
-            filename="${imgs[$name]}"
-            canonical=$(python3 /tmp/resolve.py "$filename")
-            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1].replace(' ', '_'), safe=''))" "$canonical")
-            sleep 1
+          for name in "${!wiki[@]}"; do
+            title="${wiki[$name]}"
+            filename=$(python3 /tmp/get_filename.py "$title" 2>/tmp/err_${name}.txt)
+            if [ $? -ne 0 ]; then
+              echo "::warning::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
+              fail=1
+              continue
+            fi
+            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$filename")
             code=$(curl -sL --max-time 30 \
               -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-              -H "Referer: https://commons.wikimedia.org/" \
+              -H "Referer: https://en.wikipedia.org/" \
               -w "%{http_code}" \
               -o "images/${name}.jpg" \
               "https://commons.wikimedia.org/w/thumb.php?f=${encoded}&w=320")
             size=$(stat -c%s "images/${name}.jpg")
             ctype=$(file -b --mime-type "images/${name}.jpg")
-            echo "$name ($canonical): http=$code size=$size type=$ctype"
+            echo "$name ($filename): http=$code size=$size type=$ctype"
             if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
               echo "::error::Failed to download $name (http=$code type=$ctype)"
               fail=1
