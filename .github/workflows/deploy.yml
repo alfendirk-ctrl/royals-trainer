@@ -50,7 +50,30 @@ jobs:
           fail=0
           for name in "${!imgs[@]}"; do
             filename="${imgs[$name]}"
-            encoded=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$filename', safe=''))")
+            # Resolve canonical filename via Commons API (handles renames/redirects)
+            canonical=$(python3 - <<PYEOF
+import urllib.request, urllib.parse, json, sys
+fname = """$filename"""
+enc = urllib.parse.quote(fname, safe='')
+url = f"https://commons.wikimedia.org/w/api.php?action=query&titles=File:{enc}&redirects&prop=imageinfo&iiprop=canonicaltitle&format=json"
+req = urllib.request.Request(url, headers={"User-Agent": "RoyalsTrainer/1.0 (alfendirk@gmail.com)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as r:
+        d = json.loads(r.read())
+    pages = d.get("query", {}).get("pages", {})
+    for p in pages.values():
+        title = p.get("title", "")
+        if title.startswith("File:"):
+            print(title[5:])
+            sys.exit(0)
+    # fallback: use original filename
+    print(fname)
+except Exception as e:
+    print(fname, file=sys.stderr)
+    print(fname)
+PYEOF
+)
+            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$canonical")
             code=$(curl -sL --max-time 30 \
               -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
               -H "Referer: https://commons.wikimedia.org/" \
@@ -59,7 +82,7 @@ jobs:
               "https://commons.wikimedia.org/w/thumb.php?f=${encoded}&w=400")
             size=$(stat -c%s "images/${name}.jpg")
             ctype=$(file -b --mime-type "images/${name}.jpg")
-            echo "$name: http=$code size=$size type=$ctype"
+            echo "$name ($canonical): http=$code size=$size type=$ctype"
             if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
               echo "::error::Failed to download $name (http=$code type=$ctype)"
               fail=1
