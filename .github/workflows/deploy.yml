@@ -71,27 +71,24 @@ jobs:
             ["haakon"]="Haakon, Crown Prince of Norway"
           )
           fail=0
-          echo "Total keys: ${#wiki[@]}"
           for name in "${!wiki[@]}"; do
             title="${wiki[$name]}"
-            echo "DEBUG: processing $name -> $title"
-            filename=$(python3 /tmp/get_filename.py "$title" 2>/tmp/err_${name}.txt)
-            if [ $? -ne 0 ]; then
+            if filename=$(python3 /tmp/get_filename.py "$title" 2>/tmp/err_${name}.txt); then
+              code=$(curl -sL --max-time 30 \
+                -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
+                -H "Referer: https://en.wikipedia.org/" \
+                -w "%{http_code}" \
+                -o "images/${name}.jpg" \
+                "https://commons.wikimedia.org/w/thumb.php?f=${filename}&w=320")
+              size=$(stat -c%s "images/${name}.jpg")
+              ctype=$(file -b --mime-type "images/${name}.jpg")
+              echo "$name ($filename): http=$code size=$size type=$ctype"
+              if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
+                echo "::error::Failed to download $name (http=$code type=$ctype)"
+                fail=1
+              fi
+            else
               echo "::warning::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
-              fail=1
-              continue
-            fi
-            code=$(curl -sL --max-time 30 \
-              -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-              -H "Referer: https://en.wikipedia.org/" \
-              -w "%{http_code}" \
-              -o "images/${name}.jpg" \
-              "https://commons.wikimedia.org/w/thumb.php?f=${filename}&w=320")
-            size=$(stat -c%s "images/${name}.jpg")
-            ctype=$(file -b --mime-type "images/${name}.jpg")
-            echo "$name ($filename): http=$code size=$size type=$ctype"
-            if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
-              echo "::error::Failed to download $name (http=$code type=$ctype)"
               fail=1
             fi
           done
