@@ -71,8 +71,10 @@ jobs:
             ["haakon"]="Haakon, Crown Prince of Norway"
           )
           fail=0
+          echo "Total keys: ${#wiki[@]}"
           for name in "${!wiki[@]}"; do
             title="${wiki[$name]}"
+            echo "DEBUG: processing $name -> $title"
             filename=$(python3 /tmp/get_filename.py "$title" 2>/tmp/err_${name}.txt)
             if [ $? -ne 0 ]; then
               echo "::warning::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
