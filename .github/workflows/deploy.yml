@@ -23,8 +23,31 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download royal photos
+        env:
+          RESOLVE_PY: |
+            import urllib.request, urllib.parse, json, sys
+            fname = sys.argv[1]
+            enc = urllib.parse.quote(fname, safe='')
+            url = ('https://commons.wikimedia.org/w/api.php?action=query'
+                   '&titles=File:' + enc + '&redirects&prop=imageinfo'
+                   '&iiprop=canonicaltitle&format=json')
+            req = urllib.request.Request(url, headers={
+                'User-Agent': 'RoyalsTrainer/1.0 (alfendirk@gmail.com)'})
+            try:
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    d = json.loads(r.read())
+                pages = d.get('query', {}).get('pages', {})
+                for p in pages.values():
+                    title = p.get('title', '')
+                    if title.startswith('File:'):
+                        print(title[5:])
+                        sys.exit(0)
+                print(fname)
+            except Exception:
+                print(fname)
         run: |
           mkdir -p images
+          echo "$RESOLVE_PY" > /tmp/resolve.py
           declare -A imgs=(
             ["willem-alexander"]="King_Willem-Alexander_June_2015_(1).JPG"
             ["elizabeth-ii"]="Queen_Elizabeth_II_in_March_2015.jpg"
@@ -50,29 +73,7 @@ jobs:
           fail=0
           for name in "${!imgs[@]}"; do
             filename="${imgs[$name]}"
-            # Resolve canonical filename via Commons API (handles renames/redirects)
-            canonical=$(python3 - <<PYEOF
-import urllib.request, urllib.parse, json, sys
-fname = """$filename"""
-enc = urllib.parse.quote(fname, safe='')
-url = f"https://commons.wikimedia.org/w/api.php?action=query&titles=File:{enc}&redirects&prop=imageinfo&iiprop=canonicaltitle&format=json"
-req = urllib.request.Request(url, headers={"User-Agent": "RoyalsTrainer/1.0 (alfendirk@gmail.com)"})
-try:
-    with urllib.request.urlopen(req, timeout=15) as r:
-        d = json.loads(r.read())
-    pages = d.get("query", {}).get("pages", {})
-    for p in pages.values():
-        title = p.get("title", "")
-        if title.startswith("File:"):
-            print(title[5:])
-            sys.exit(0)
-    # fallback: use original filename
-    print(fname)
-except Exception as e:
-    print(fname, file=sys.stderr)
-    print(fname)
-PYEOF
-)
+            canonical=$(python3 /tmp/resolve.py "$filename")
             encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$canonical")
             code=$(curl -sL --max-time 30 \
               -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
