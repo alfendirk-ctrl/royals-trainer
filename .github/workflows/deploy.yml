@@ -74,7 +74,7 @@ jobs:
           for name in "${!imgs[@]}"; do
             filename="${imgs[$name]}"
             canonical=$(python3 /tmp/resolve.py "$filename")
-            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$canonical")
+            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1].replace(' ', '_'), safe=''))" "$canonical")
             code=$(curl -sL --max-time 30 \
               -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
               -H "Referer: https://commons.wikimedia.org/" \
