@@ -22,45 +22,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test alternative image sources
+      - name: Download royal photos
         run: |
-          echo "=== SOURCE 1: commons.wikimedia.org/w/thumb.php ==="
-          code=$(curl -sL --max-time 20 \
-            -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-            -H "Referer: https://commons.wikimedia.org/" \
-            -w "%{http_code}" -o /tmp/s1.jpg \
-            "https://commons.wikimedia.org/w/thumb.php?f=King_Willem-Alexander_June_2015_(1).JPG&w=400")
-          echo "commons thumb.php: http=$code size=$(stat -c%s /tmp/s1.jpg) type=$(file -b --mime-type /tmp/s1.jpg)"
-
-          echo "=== SOURCE 2: Internet Archive Wayback Machine ==="
-          code=$(curl -sL --max-time 30 \
-            -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-            -w "%{http_code}" -o /tmp/s2.jpg \
-            "https://web.archive.org/web/2024/https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/King_Willem-Alexander_June_2015_%281%29.JPG/400px-King_Willem-Alexander_June_2015_%281%29.JPG")
-          echo "archive.org: http=$code size=$(stat -c%s /tmp/s2.jpg) type=$(file -b --mime-type /tmp/s2.jpg)"
-
-          echo "=== SOURCE 3: Picryl.com (public domain CDN) ==="
-          code=$(curl -sL --max-time 20 \
-            -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-            -w "%{http_code}" -o /tmp/s3.jpg \
-            "https://p1.picryl.com/media/king-willem-alexander-june-2015-1-0f0ac9-640.jpg")
-          echo "picryl.com: http=$code size=$(stat -c%s /tmp/s3.jpg) type=$(file -b --mime-type /tmp/s3.jpg)"
-
-          echo "=== SOURCE 4: Nederlandse Koninklijk Huis (official press photo) ==="
-          code=$(curl -sL --max-time 20 \
-            -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
-            -w "%{http_code}" -o /tmp/s4.jpg \
-            "https://www.koninklijkhuis.nl/binaries/medium/content/gallery/koninklijkhuis/content-afbeeldingen/leden-koninklijk-huis/willem-alexander/2021/koning-willem-alexander-2019-rvu-004.jpg")
-          echo "koninklijkhuis.nl: http=$code size=$(stat -c%s /tmp/s4.jpg) type=$(file -b --mime-type /tmp/s4.jpg)"
-
-          echo "=== SOURCE 5: Wikimedia via w3.org mirror proxy check ==="
-          code=$(curl -sL --max-time 20 \
-            -H "User-Agent: Mozilla/5.0" \
-            -w "%{http_code}" -o /tmp/s5.jpg \
-            "https://upload.wikimedia.org/wikipedia/commons/6/6d/King_Willem-Alexander_June_2015_%281%29.JPG")
-          echo "wikimedia original (no thumb): http=$code size=$(stat -c%s /tmp/s5.jpg) type=$(file -b --mime-type /tmp/s5.jpg)"
-
-          exit 1
+          mkdir -p images
+          declare -A imgs=(
+            ["willem-alexander"]="King_Willem-Alexander_June_2015_(1).JPG"
+            ["elizabeth-ii"]="Queen_Elizabeth_II_in_March_2015.jpg"
+            ["diana"]="Princess_Diana_1997_(1).jpg"
+            ["charles-iii"]="King_Charles_III_(cropped).jpg"
+            ["maxima"]="Queen_Maxima_of_the_Netherlands_(cropped).jpg"
+            ["felipe-vi"]="King_Felipe_VI_of_Spain.jpg"
+            ["grace-kelly"]="Grace_Kelly_portrait.jpg"
+            ["beatrix"]="Beatrix_van_Nederland_2011.jpg"
+            ["margrethe-ii"]="Margrethe_II_of_Denmark_2023.jpg"
+            ["catherine"]="Catherine,_Princess_of_Wales_2023.jpg"
+            ["letizia"]="Queen_Letizia_of_Spain_(cropped).jpg"
+            ["william"]="Prince_William_2021_(cropped).jpg"
+            ["harald-v"]="Harald_V_of_Norway_2021.jpg"
+            ["frederik-x"]="Frederik_X_of_Denmark_(cropped).jpg"
+            ["albert-ii"]="Albert_II_of_Monaco.jpg"
+            ["carl-xvi-gustaf"]="Carl_XVI_Gustaf_2022.jpg"
+            ["victoria"]="Victoria,_Crown_Princess_of_Sweden_(2018).jpg"
+            ["filip"]="King_Philippe_of_Belgium_(cropped).jpg"
+            ["mary"]="Queen_Mary_of_Denmark_(cropped).jpg"
+            ["haakon"]="Haakon_Magnus_of_Norway_2022.jpg"
+          )
+          fail=0
+          for name in "${!imgs[@]}"; do
+            filename="${imgs[$name]}"
+            encoded=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$filename', safe=''))")
+            code=$(curl -sL --max-time 30 \
+              -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
+              -H "Referer: https://commons.wikimedia.org/" \
+              -w "%{http_code}" \
+              -o "images/${name}.jpg" \
+              "https://commons.wikimedia.org/w/thumb.php?f=${encoded}&w=400")
+            size=$(stat -c%s "images/${name}.jpg")
+            ctype=$(file -b --mime-type "images/${name}.jpg")
+            echo "$name: http=$code size=$size type=$ctype"
+            if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
+              echo "::error::Failed to download $name (http=$code type=$ctype)"
+              fail=1
+            fi
+          done
+          if [ "$fail" = "1" ]; then
+            echo "::error::One or more royal photos failed to download"
+            exit 1
+          fi
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
