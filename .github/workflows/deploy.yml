@@ -79,13 +79,12 @@ jobs:
               fail=1
               continue
             fi
-            encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$filename")
             code=$(curl -sL --max-time 30 \
               -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
               -H "Referer: https://en.wikipedia.org/" \
               -w "%{http_code}" \
               -o "images/${name}.jpg" \
-              "https://commons.wikimedia.org/w/thumb.php?f=${encoded}&w=320")
+              "https://commons.wikimedia.org/w/thumb.php?f=${filename}&w=320")
             size=$(stat -c%s "images/${name}.jpg")
             ctype=$(file -b --mime-type "images/${name}.jpg")
             echo "$name ($filename): http=$code size=$size type=$ctype"
