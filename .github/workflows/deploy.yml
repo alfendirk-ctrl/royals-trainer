@@ -71,13 +71,13 @@ jobs:
             ["haakon"]="Haakon, Crown Prince of Norway"
             ["anne"]="Anne, Princess Royal"
             ["juan-carlos"]="Juan Carlos I"
-            ["sofia"]="Sofía of Spain"
+            ["sofia"]="Sofia of Spain"
             ["mathilde"]="Mathilde of Belgium"
             ["charlene"]="Charlene, Princess of Monaco"
             ["mette-marit"]="Mette-Marit, Crown Princess of Norway"
             ["henri"]="Henri, Grand Duke of Luxembourg"
             ["amalia"]="Amalia of the Netherlands"
-            ["leonor"]="Leonor, Princess of Asturias"
+            ["leonor"]="Leonor of Spain"
             ["ingrid-alexandra"]="Princess Ingrid Alexandra"
           )
           fail=0
