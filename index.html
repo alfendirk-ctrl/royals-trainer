@@ -226,6 +226,15 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100dvh}
         </div>
         <div class="round-arrow">›</div>
       </div>
+      <div class="round-card" onclick="showRoyalsList()" style="margin-top:4px">
+        <div class="round-icon" style="background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.3)">&#127758;</div>
+        <div>
+          <div class="round-title">Royals per land</div>
+          <div class="round-desc">Bekijk alle royals in de quiz per land</div>
+        </div>
+        <div class="round-arrow">›</div>
+      </div>
+
       <div id="home-stats" style="display:none">
         <div class="section-label">Statistieken</div>
         <div class="stat-grid">
@@ -234,6 +243,15 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100dvh}
           <div class="stat-box"><div class="stat-num" id="st-pct" style="color:#A880FF">0%</div><div class="stat-lbl">Score</div></div>
         </div>
       </div>
+    </div>
+
+    <!-- ROYALS LIST SCREEN -->
+    <div id="screen-royals" class="screen">
+      <div class="top-bar">
+        <span class="round-badge" style="background:rgba(0,200,255,.15);border:1px solid rgba(0,200,255,.3);color:#00C8FF">&#127758; Royals per land</span>
+        <button class="stop-btn" onclick="goMenu()">&#10005; Terug</button>
+      </div>
+      <div id="royals-list-content"></div>
     </div>
 
     <!-- QUESTION SCREEN -->
@@ -536,6 +554,53 @@ function goHome(){
   showScreen('home');
   roundId = null;
   updateHomeStats();
+}
+
+function showRoyalsList(){
+  var flags = {
+    'NEDERLAND':'🇳🇱','VERENIGD KONINKRIJK':'🇬🇧','SPANJE':'🇪🇸',
+    'MONACO':'🇲🇨','DENEMARKEN':'🇩🇰','NOORWEGEN':'🇳🇴',
+    'ZWEDEN':'🇸🇪','BELGIE':'🇧🇪','LUXEMBURG':'🇱🇺'
+  };
+  // Derive country from image filename prefix/suffix patterns
+  function getLand(img){
+    var f = img.replace('images/','').replace(/\.(jpg|webp)$/,'');
+    if(/-(bel|belgie)$/.test(f) || ['boudewijn','fabiola','paola','astrid-bel','delphine','albert-ii-bel','elisabeth-bel','filip','mathilde'].indexOf(f)>=0) return 'BELGIE';
+    if(/-(lux|luxemburg)$/.test(f) || ['jean-lux','maria-teresa','guillaume-lux','stephanie-lux','henri'].indexOf(f)>=0) return 'LUXEMBURG';
+    if(/-(uk|england)$/.test(f) || ['elizabeth-ii','diana','charles-iii','catherine','william','anne','harry','meghan','camilla','philip','margaret','victoria-queen','edward-viii','andrew','edward-uk','sophie','beatrice','eugenie','zara'].indexOf(f)>=0) return 'VERENIGD KONINKRIJK';
+    if(['felipe-vi','letizia','juan-carlos','sofia-queen','leonor','elena','cristina','sofia-infanta'].indexOf(f)>=0) return 'SPANJE';
+    if(['grace-kelly','albert-ii','charlene','rainier','caroline','stephanie-monaco'].indexOf(f)>=0) return 'MONACO';
+    if(['margrethe-ii','frederik-x','mary','joachim','christian-denmark','marie-denmark','henrik','benedikte'].indexOf(f)>=0) return 'DENEMARKEN';
+    if(['carl-xvi-gustaf','victoria','silvia','carl-philip','sofia-sweden','madeleine','daniel-sweden','estelle'].indexOf(f)>=0) return 'ZWEDEN';
+    if(['filip','mathilde','boudewijn','albert-ii-bel','fabiola','paola','elisabeth-bel','astrid-bel','delphine'].indexOf(f)>=0) return 'BELGIE';
+    if(['haakon','mette-marit','ingrid-alexandra','harald-v','sonja','martha-louise','sverre'].indexOf(f)>=0) return 'NOORWEGEN';
+    return 'NEDERLAND';
+  }
+  var landOrder = ['NEDERLAND','VERENIGD KONINKRIJK','SPANJE','MONACO','DENEMARKEN','NOORWEGEN','ZWEDEN','BELGIE','LUXEMBURG'];
+  var grouped = {};
+  landOrder.forEach(function(l){ grouped[l] = []; });
+  PHOTO_QS.forEach(function(q){
+    var land = getLand(q.img);
+    if(!grouped[land]) grouped[land] = [];
+    grouped[land].push(q.answer);
+  });
+
+  var html = '';
+  landOrder.forEach(function(land){
+    var royals = grouped[land];
+    if(!royals || !royals.length) return;
+    var flag = flags[land] || '🏰';
+    html += '<div style="margin-bottom:18px">';
+    html += '<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">' + flag + ' ' + land + ' <span style="color:var(--dim)">(' + royals.length + ')</span></div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    royals.forEach(function(name){
+      html += '<span style="background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:13px">' + name + '</span>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('royals-list-content').innerHTML = html;
+  showScreen('royals');
 }
 
 function goMenu(){
