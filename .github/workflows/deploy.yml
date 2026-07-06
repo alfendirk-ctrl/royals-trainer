@@ -78,9 +78,8 @@ jobs:
             ["amalia"]="Amalia of the Netherlands"
             ["ingrid-alexandra"]="Princess Ingrid Alexandra"
           )
-          fail=0
-          for name in "${!wiki[@]}"; do
-            title="${wiki[$name]}"
+          download_royal() {
+            local name="$1" title="$2" fatal="$3"
             if filename=$(python3 /tmp/get_filename.py "$title" 2>/tmp/err_${name}.txt); then
               code=$(curl -sL --max-time 30 \
                 -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36" \
@@ -92,18 +91,98 @@ jobs:
               ctype=$(file -b --mime-type "images/${name}.jpg")
               echo "$name ($filename): http=$code size=$size type=$ctype"
               if [ "$code" != "200" ] || [ "$ctype" != "image/jpeg" ]; then
-                echo "::error::Failed to download $name (http=$code type=$ctype)"
-                fail=1
+                if [ "$fatal" = "1" ]; then
+                  echo "::error::Failed to download $name (http=$code type=$ctype)"
+                  return 1
+                else
+                  echo "::warning::Failed to download $name (http=$code type=$ctype)"
+                  rm -f "images/${name}.jpg"
+                fi
               fi
             else
-              echo "::warning::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
-              fail=1
+              if [ "$fatal" = "1" ]; then
+                echo "::error::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
+                return 1
+              else
+                echo "::warning::Could not resolve filename for $name: $(cat /tmp/err_${name}.txt)"
+              fi
             fi
+            return 0
+          }
+
+          fail=0
+          for name in "${!wiki[@]}"; do
+            download_royal "$name" "${wiki[$name]}" 1 || fail=1
           done
           if [ "$fail" = "1" ]; then
-            echo "::error::One or more royal photos failed to download"
+            echo "::error::One or more core royal photos failed to download"
             exit 1
           fi
+
+          declare -A wiki_ext=(
+            ["juliana"]="Juliana of the Netherlands"
+            ["wilhelmina"]="Wilhelmina of the Netherlands"
+            ["bernhard-sr"]="Bernhard of Lippe-Biesterfeld"
+            ["irene"]="Irene, Princess of the Netherlands"
+            ["margriet"]="Margriet of the Netherlands"
+            ["constantijn"]="Constantijn of the Netherlands"
+            ["laurentien"]="Laurentien of the Netherlands"
+            ["bernhard-jr"]="Bernhard of Orange-Nassau (born 1969)"
+            ["friso"]="Johan Friso of Orange-Nassau"
+            ["mabel"]="Mabel of Orange-Nassau"
+            ["pieter-christiaan"]="Pieter-Christiaan of Orange-Nassau"
+            ["alexia"]="Alexia of the Netherlands"
+            ["ariane"]="Ariane of the Netherlands"
+            ["harry"]="Harry, Duke of Sussex"
+            ["meghan"]="Meghan, Duchess of Sussex"
+            ["camilla"]="Camilla, Queen of the United Kingdom"
+            ["philip"]="Prince Philip, Duke of Edinburgh"
+            ["margaret"]="Princess Margaret, Countess of Snowdon"
+            ["victoria-queen"]="Queen Victoria"
+            ["edward-viii"]="Edward VIII"
+            ["andrew"]="Prince Andrew, Duke of York"
+            ["edward-uk"]="Edward, Duke of Edinburgh"
+            ["sophie"]="Sophie, Duchess of Edinburgh"
+            ["beatrice"]="Princess Beatrice of York"
+            ["eugenie"]="Princess Eugenie of York"
+            ["zara"]="Zara Tindall"
+            ["sofia-queen"]="Sofía of Spain"
+            ["leonor"]="Leonor, Princess of Asturias"
+            ["elena"]="Infanta Elena of Spain"
+            ["cristina"]="Infanta Cristina of Spain"
+            ["sofia-infanta"]="Infanta Sofía of Spain"
+            ["rainier"]="Rainier III, Prince of Monaco"
+            ["caroline"]="Caroline, Princess of Hanover"
+            ["stephanie-monaco"]="Stéphanie, Princess of Monaco"
+            ["joachim"]="Joachim, Prince of Denmark"
+            ["christian-denmark"]="Christian, Crown Prince of Denmark"
+            ["marie-denmark"]="Marie, Princess of Denmark"
+            ["henrik"]="Henrik, Prince Consort of Denmark"
+            ["benedikte"]="Benedikte of Denmark"
+            ["sonja"]="Sonja of Norway"
+            ["martha-louise"]="Märtha Louise of Norway"
+            ["sverre"]="Sverre Magnus of Norway"
+            ["silvia"]="Silvia of Sweden"
+            ["carl-philip"]="Carl Philip, Duke of Värmland"
+            ["sofia-sweden"]="Sofia, Duchess of Värmland"
+            ["madeleine"]="Madeleine, Duchess of Hälsingland and Gästrikland"
+            ["daniel-sweden"]="Daniel, Duke of Västergötland"
+            ["estelle"]="Estelle of Sweden"
+            ["boudewijn"]="Baudouin of Belgium"
+            ["albert-ii-bel"]="Albert II of Belgium"
+            ["fabiola"]="Fabiola of Belgium"
+            ["paola"]="Paola of Belgium"
+            ["elisabeth-bel"]="Elisabeth, Duchess of Brabant"
+            ["astrid-bel"]="Princess Astrid of Belgium"
+            ["delphine"]="Delphine of Belgium"
+            ["jean-lux"]="Jean, Grand Duke of Luxembourg"
+            ["maria-teresa"]="Maria Teresa, Grand Duchess of Luxembourg"
+            ["guillaume-lux"]="Guillaume, Hereditary Grand Duke of Luxembourg"
+            ["stephanie-lux"]="Stéphanie, Hereditary Grand Duchess of Luxembourg"
+          )
+          for name in "${!wiki_ext[@]}"; do
+            download_royal "$name" "${wiki_ext[$name]}" 0
+          done
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
