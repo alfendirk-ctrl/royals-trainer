@@ -125,11 +125,7 @@ jobs:
             ["wilhelmina"]="Wilhelmina of the Netherlands"
             ["bernhard-sr"]="Bernhard of Lippe-Biesterfeld"
             ["margriet"]="Margriet of the Netherlands"
-            ["laurentien"]="Laurentien, Princess of Orange-Nassau"
             ["mabel"]="Princess Mabel of Orange-Nassau"
-            ["friso"]="Johan Friso, Prince of Orange-Nassau"
-            ["bernhard-jr"]="Bernhard of Orange-Nassau"
-            ["pieter-christiaan"]="Pieter-Christiaan, Baron of Vollenhoven"
             ["alexia"]="Princess Alexia of the Netherlands"
             ["ariane"]="Ariane of the Netherlands"
             # Verenigd Koninkrijk
@@ -147,8 +143,6 @@ jobs:
             ["eugenie"]="Princess Eugenie of York"
             ["zara"]="Zara Tindall"
             # Spanje (sofia-queen, cristina, sofia-infanta hebben geen Wikipedia-thumbnail)
-            ["leonor"]="Leonor, Princess of Asturias"
-            ["elena"]="Elena, Duchess of Lugo"
             # Monaco
             ["rainier"]="Rainier III, Prince of Monaco"
             ["caroline"]="Caroline, Princess of Hanover"
@@ -156,7 +150,6 @@ jobs:
             # Denemarken
             ["joachim"]="Prince Joachim of Denmark"
             ["christian-denmark"]="Christian, Crown Prince of Denmark"
-            ["marie-denmark"]="Marie of Denmark"
             ["henrik"]="Henrik, Prince Consort of Denmark"
             ["benedikte"]="Benedikte of Denmark"
             # Noorwegen
@@ -166,7 +159,6 @@ jobs:
             # Zweden
             ["silvia"]="Silvia of Sweden"
             ["carl-philip"]="Carl Philip, Duke of Värmland"
-            ["sofia-sweden"]="Sofia of Sweden"
             ["madeleine"]="Princess Madeleine of Sweden"
             ["daniel-sweden"]="Daniel, Duke of Västergötland"
             ["estelle"]="Estelle of Sweden"
@@ -175,7 +167,6 @@ jobs:
             ["albert-ii-bel"]="Albert II of Belgium"
             ["fabiola"]="Fabiola of Belgium"
             ["astrid-bel"]="Princess Astrid of Belgium"
-            ["delphine"]="Princess Delphine of Belgium"
             # Luxemburg
             ["jean-lux"]="Jean, Grand Duke of Luxembourg"
             ["maria-teresa"]="Maria Teresa, Grand Duchess of Luxembourg"
