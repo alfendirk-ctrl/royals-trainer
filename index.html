@@ -324,7 +324,7 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100dvh}
         <input class="ans-input" id="assoc-input" type="text" placeholder="Naam van de royal..." autocomplete="off" autocorrect="off" spellcheck="false">
         <div class="action-grid" id="assoc-actions">
           <button class="btn-primary" id="assoc-check" style="background:var(--green);box-shadow:0 4px 20px var(--green-glow)" onclick="checkAssoc()">Controleer</button>
-          <button class="btn-secondary" id="assoc-reveal-btn" onclick="revealOneChip()">&#128161; Hint +1</button>
+          <button class="btn-secondary" id="assoc-reveal-btn" style="display:none" onclick="revealOneChip()">&#128161; Hint +1</button>
           <button class="btn-secondary" onclick="skipCurrent()">Sla over</button>
         </div>
       </div>
@@ -495,6 +495,47 @@ var ASSOC_QS = [
   {chips:["Noos stichting","fraude","veroordeeld 2017","overheidsgeld","man Infanta Cristina"],answer:"Inaki Urdangarin",uitleg:"Inaki Urdangarin werd veroordeeld voor het verduisteren van overheidsgeld via zijn Instituto Noos.",level:6},
   {chips:["katholicisme","Rome","1654 abdicatie","17e-eeuws Zweden","kunstwerken verzamelaar"],answer:"Koningin Christina",uitleg:"Christina van Zweden abdiceerde in 1654, bekeerde zich tot het katholicisme en leefde de rest van haar leven in Rome.",level:7},
   {chips:["oorlogskoningin","vluchtte mei 1940","Radio Oranje","moeder Juliana","ballingschap Londen"],answer:"Wilhelmina",uitleg:"Wilhelmina vluchtte in mei 1940 naar Londen en werd het symbool van het Nederlandse verzet.",level:7},
+  // Extra vragen
+  {chips:["Canada","Ottawa","1943","Juliana","bevrijdingstulpen"],answer:"Beatrix",uitleg:"Beatrix werd in 1938 geboren maar haar zusje Irene in 1939 en Margriet in 1943 in Ottawa. De tulpen worden nog elk jaar aan Canada geschonken als dank.",level:2},
+  {chips:["Wales","Caernarfon Castle","investituur 1969","zwart-wit foto","troonopvolger"],answer:"Charles III",uitleg:"Charles III werd in 1969 feestelijk beleend als Prins van Wales in Caernarfon Castle.",level:2},
+  {chips:["Marbella","Golf","hartaanval 1994","Fabiola","Belgie"],answer:"Boudewijn",uitleg:"Koning Boudewijn overleed in 1993 onverwacht aan een hartaanval tijdens zijn vakantie in Motril, Spanje.",level:3},
+  {chips:["Sandehagen","duiken","Noorwegen","1937","huwelijk Sonja"],answer:"Harald V",uitleg:"Harald V trouwde in 1968 met Sonja Haraldsen nadat het parlement na jaren eindelijk instemde.",level:3},
+  {chips:["Müller","Heidelberg","Duitsland","1972 München","keuken gouden medaille"],answer:"Silvia van Zweden",uitleg:"Silvia Sommerlath werd geboren in Heidelberg en ontmoette Carl Gustaf op de Spelen in München in 1972.",level:3},
+  {chips:["Luxembourg","Groot-Hertogdom","Frans","Maria Teresa","Cuba"],answer:"Henri van Luxemburg",uitleg:"Groothertogin Maria Teresa werd geboren in Cuba en is de vrouw van Groothertog Henri.",level:3},
+  {chips:["enkel","ski","Lech","2012","coma twee jaar"],answer:"Friso",uitleg:"Prins Friso raakte in 2012 bedolven door een lawine in Lech am Arlberg en overleed in 2013 na een coma van anderhalf jaar.",level:4},
+  {chips:["Monegaskisch","formule 1","FIA","auto","Grimaldi"],answer:"Albert II van Monaco",uitleg:"Albert II is een groot motorsportliefhebber en heeft nauwe banden met de Formule 1-wereld in zijn vorstendom.",level:4},
+  {chips:["Copenhague","drankmisbruik","begraving weigerde","Frans paspoort","Denemarken"],answer:"Henrik van Denemarken",uitleg:"Prins-gemaal Henrik van Denemarken was openlijk verbitterd dat hij nooit een gelijke titel kreeg en weigerde begraven te worden naast zijn vrouw.",level:4},
+  {chips:["Brussel","Laeken","architect","kasteel","Belgie"],answer:"Mathilde van Belgie",uitleg:"Koningin Mathilde woont met haar gezin in het Kasteel van Laken bij Brussel.",level:4},
+  {chips:["Lissabon","Amaliapark","tiara","Nederland","2003 geboren"],answer:"Amalia",uitleg:"Prinses Amalia, geboren in 2003, is de oudste dochter van Willem-Alexander en Maxima en toekomstig koningin.",level:2},
+  {chips:["Wimbledon","tennisbaan","coach","1984","Camilla"],answer:"Charles III",uitleg:"Charles III trouwde in 2005 met Camilla Parker Bowles na een jarenlange geheime relatie.",level:3},
+  {chips:["Edinburg","Griekenland","geboren","Philip","99 jaar"],answer:"Philip",uitleg:"Prins Philip werd geboren op Korfu in 1921 en overleed in 2021, vlak voor zijn 100e verjaardag.",level:3},
+  {chips:["Snowdon","fotograaf","Margaret","kunstenaars","Windsor"],answer:"Margaret",uitleg:"Prinses Margaret trouwde in 1960 met fotograaf Antony Armstrong-Jones, later Lord Snowdon.",level:4},
+  {chips:["Madeira","Lissabon","Expo","schepen","Portugal"],answer:"Felipe VI",uitleg:"Koning Felipe VI van Spanje was als jeugdig zeiler actief en nam deel aan de Olympische Spelen van 1992 in Barcelona.",level:4},
+  {chips:["Versailles","trouwen","Stéphanie","1956","auto-ongeluk 1982"],answer:"Grace Kelly",uitleg:"Grace Kelly overleed in 1982 na een auto-ongeluk op de kustweg van Monaco.",level:2},
+  {chips:["paarden","eventing","olympisch zilver","Londen 2012","Phillips"],answer:"Zara Tindall",uitleg:"Zara Tindall (née Phillips) won olympisch zilver met het Britse eventing-team bij de Spelen van 2012 in Londen.",level:5},
+  {chips:["Walibi","soldaat","Afghanistan","Apache helikopter","Invictus Games"],answer:"Harry",uitleg:"Prins Harry diende twee keer in Afghanistan als Apache-helikopterpiloot en richtte de Invictus Games op.",level:3},
+  {chips:["Venetie","gondel","huwelijk","Chris O'Neill","VS"],answer:"Madeleine van Zweden",uitleg:"Prinses Madeleine trouwde in 2013 met de Brits-Amerikaanse zakenman Chris O'Neill en woont in de VS.",level:5},
+  {chips:["Malmö","voetbalclub","supporter","Daniel","Västergötland"],answer:"Daniel van Zweden",uitleg:"Prins Daniel, Hertog van Västergötland, is fan van voetbalclub Malmö FF.",level:6},
+  {chips:["Parijs","Saint-Germain","ambassade","Joachim","kinderen titels"],answer:"Joachim van Denemarken",uitleg:"Prins Joachim verhuisde naar Parijs voor zijn werk bij de Deense ambassade nadat zijn kinderen hun titels verloren.",level:5},
+  {chips:["Nieuw-Zeeland","rugby","Victoire","Charlotte","Grimaldi"],answer:"Charlene van Monaco",uitleg:"Vorstin Charlene werd geboren in Zimbabwe en groeide op in Zuid-Afrika als zwemster.",level:4},
+  {chips:["zwemkampioene","Zoeloe","Durban","Clarence House","Monaco"],answer:"Charlene van Monaco",uitleg:"Charlene Wittstock vertegenwoordigde Zuid-Afrika als zwemster op de Gemenebestspelen van 2002.",level:5},
+  {chips:["Bayerische","München","Wittelsbach","Sisi","krankzinnige keuze"],answer:"Keizerin Elisabeth Sisi",uitleg:"Elisabeth van Beieren, bekend als Sisi, was een prinses uit het huis Wittelsbach.",level:5},
+  {chips:["journalist","TVE","reportage","huwelijk 2004","Palma"],answer:"Letizia",uitleg:"Letizia Ortiz Rocasolano werkte als journaliste bij TVE en ontmoette Felipe VI tijdens een persconferentie.",level:2},
+  {chips:["Oslo","Skaugum","fjord","engelen","Durek Verrett"],answer:"Märtha Louise",uitleg:"Prinses Märtha Louise van Noorwegen trouwde in 2024 met de Amerikaanse sjamaan Durek Verrett.",level:4},
+  {chips:["Akershus","Haakon","Mette-Marit","enkel kind","kroonprins"],answer:"Ingrid Alexandra",uitleg:"Prinses Ingrid Alexandra is de dochter van Haakon en Mette-Marit en tweede in lijn voor de Noorse troon.",level:5},
+  {chips:["leesvaardigheid","VN","journalist","Constantijn","ESA"],answer:"Laurentien",uitleg:"Prinses Laurentien is VN-ambassadrice voor leesvaardigheid en werkte als journaliste voor ze met Constantijn trouwde.",level:5},
+  {chips:["Washington","Suits","actrice","Toronto","rechten vrouwen"],answer:"Meghan Markle",uitleg:"Meghan Markle studeerde internationale betrekkingen en werkte als actrice in de serie Suits.",level:2},
+  {chips:["Estland","Letland","Litouwen","president","onafhankelijkheid"],answer:"Margrethe II",uitleg:"Margrethe II sprak als eerste westerse staatshoofd de Baltische staten toe na hun onafhankelijkheid in 1991.",level:6},
+  {chips:["Wenen","Hofburg","opera","bal","dubbelmonarchie"],answer:"Keizerin Elisabeth Sisi",uitleg:"Sisi was een icoon van de Weense hofcultuur maar voelde zich gevangen door de strenge etiquette.",level:4},
+  {chips:["Huis Windsor","naam 1917","Coburg","oorlog","George V"],answer:"Elizabeth II",uitleg:"George V veranderde de familienaam van Saksen-Coburg-Gotha naar Windsor in 1917 vanwege anti-Duitse sentiment.",level:5},
+  {chips:["Aberystwyth","taal","Welsh","1969","kasteel investituur"],answer:"Charles III",uitleg:"Charles III leerde Welsh voor zijn investituur als Prins van Wales in Caernarfon Castle in 1969.",level:4},
+  {chips:["klimaat","Earthshot","William","natuur","prijs"],answer:"William",uitleg:"Prins William richtte de Earthshot Prize op, een jaarlijkse milieuprijsuitreiking gebaseerd op JFK's moonshot.",level:3},
+  {chips:["koken","boek","privé chef","Noorwegen","Paradise Hotel"],answer:"Mette-Marit",uitleg:"Kroonprinses Mette-Marit ontmoette Haakon op een festival. Ze bracht een kind mee uit een eerdere relatie.",level:4},
+  {chips:["Brussel","mensenrechten","UNICEF","Sophie","Edinburgh"],answer:"Sophie van Edinburgh",uitleg:"Sophie, Hertogin van Edinburgh, is UNICEF-ambassadrice met speciale focus op slachtoffers van seksueel geweld in conflictgebieden.",level:5},
+  {chips:["Beatrice","Sarah Ferguson","York","2020","coronahuwelijk"],answer:"Beatrice van York",uitleg:"Prinses Beatrice trouwde in 2020 in een intieme coronaceremonie in Windsor met Edoardo Mapelli Mozzi.",level:5},
+  {chips:["Eugenie","Jack Brooksbank","kunstwereld","Londen","York"],answer:"Eugenie van York",uitleg:"Prinses Eugenie werkt in de kunstwereld in Londen en trouwde in 2018 met Jack Brooksbank.",level:6},
+  {chips:["Paleis het Loo","Apeldoorn","abdicatie 1980","Claus","NL"],answer:"Juliana",uitleg:"Koningin Juliana deed in 1980 afstand van de troon en leefde daarna op Paleis het Loo in Apeldoorn.",level:3},
+  {chips:["Grimaldi","1297","Franciscaner","Monaco","middeleeuwen"],answer:"Albert II van Monaco",uitleg:"Het huis Grimaldi regeert Monaco al sinds 1297, toen François Grimaldi het kasteel innam verkleed als monnik.",level:6},
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -768,44 +809,29 @@ function mcTimeUp(q, opts){
 
 // ── ASSOC ROUND ───────────────────────────────────────────────────────────────
 function loadAssoc(q){
-  revealedChips = 1;
   setDiffBadge('assoc-diff', q.level);
   renderChips(q);
   document.getElementById('assoc-input').value = '';
   document.getElementById('assoc-hint-strip').className = 'hint-strip';
   document.getElementById('assoc-actions').style.display = 'grid';
   document.getElementById('assoc-block').style.display = 'block';
-  updateRevealBtn(q);
   setTimeout(function(){ document.getElementById('assoc-input').focus(); }, 150);
-  // Auto-reveal every 8 seconds
-  chipRevealTimer = setInterval(function(){
-    if(revealedChips < q.chips.length){ revealedChips++; renderChips(q); updateRevealBtn(q); }
-    else stopChipTimer();
-  }, 8000);
   startTimer(function(){ assocTimeUp(q); });
 }
 
 function renderChips(q){
   var wrap = document.getElementById('assoc-chips');
   wrap.innerHTML = '';
-  q.chips.forEach(function(chip, i){
+  q.chips.forEach(function(chip){
     var d = document.createElement('div');
-    d.className = 'chip ' + (i < revealedChips ? 'shown' : 'hidden');
-    d.textContent = i < revealedChips ? chip : '...';
+    d.className = 'chip shown';
+    d.textContent = chip;
     wrap.appendChild(d);
   });
 }
 
-function updateRevealBtn(q){
-  var btn = document.getElementById('assoc-reveal-btn');
-  btn.disabled = revealedChips >= q.chips.length;
-  btn.style.color = revealedChips >= q.chips.length ? '#333' : '';
-}
-
-function revealOneChip(){
-  var q = questions[idx];
-  if(revealedChips < q.chips.length){ revealedChips++; renderChips(q); updateRevealBtn(q); }
-}
+function updateRevealBtn(){}
+function revealOneChip(){}
 
 function checkAssoc(){
   var q = questions[idx];
