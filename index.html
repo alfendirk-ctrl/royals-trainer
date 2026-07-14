@@ -206,7 +206,7 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100dvh}
         <div class="round-icon" style="background:rgba(123,79,255,.15);border:1px solid rgba(123,79,255,.3)">&#128247;</div>
         <div>
           <div class="round-title">Fotoronde</div>
-          <div class="round-desc">Echte foto's &mdash; wie zie je? &middot; 20 vragen, oplopend</div>
+          <div class="round-desc">Echte foto's &mdash; wie zie je? &middot; alle royals, elke keer anders</div>
         </div>
         <div class="round-arrow">›</div>
       </div>
@@ -764,7 +764,7 @@ function photoTimeUp(q){
 // ── MC ROUND ──────────────────────────────────────────────────────────────────
 function loadMC(q){
   setDiffBadge('mc-diff', q.level);
-  document.getElementById('mc-num').textContent = 'Vraag ' + (idx+1) + '/20';
+  document.getElementById('mc-num').textContent = 'Vraag ' + (idx+1) + '/' + questions.length;
   document.getElementById('mc-text').textContent = q.q;
   var opts = shuffle(q.options);
   var letters = ['A','B','C','D'];
