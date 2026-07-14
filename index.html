@@ -651,7 +651,7 @@ function shuffle(arr){
 function startRound(id){
   roundId = id;
   idx = 0; score = 0; missed = [];
-  if(id === 'photo') questions = shuffle(PHOTO_QS).slice(0, 20);
+  if(id === 'photo') questions = shuffle(PHOTO_QS);
   else if(id === 'mc') questions = shuffle(MC_QS).slice(0, 20);
   else questions = shuffle(ASSOC_QS).slice(0, 20);
   showScreen('question');
